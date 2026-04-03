@@ -1,0 +1,304 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}Login | ChandaMama Retail Dashboard{% endblock %}
+
+{% block extrastyle %}
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Reset everything for login page ── */
+html, body {
+  margin: 0; padding: 0;
+  font-family: 'Syne', sans-serif;
+  background: #0d1117;
+  min-height: 100vh;
+}
+
+/* ── Hide Django's default login chrome ── */
+#header, #nav-sidebar, #toolbar,
+.breadcrumbs, #footer { display: none !important; }
+
+#content-main { padding: 0 !important; }
+#content      { padding: 0 !important; }
+
+/* ── Full page login layout ── */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(0,212,255,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(251,191,36,0.04) 0%, transparent 50%),
+    #0d1117;
+  padding: 20px;
+}
+
+/* ── Login card ── */
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #111820;
+  border: 1px solid #1e2d3d;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+}
+
+/* ── Logo area ── */
+.login-logo {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-hex {
+  font-size: 48px;
+  color: #fbbf24;
+  display: block;
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.login-brand {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+}
+
+.login-brand span { color: #fbbf24; }
+
+.login-tagline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #3d5a73;
+  margin-top: 6px;
+}
+
+/* ── Divider ── */
+.login-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #1e2d3d, transparent);
+  margin: 0 0 28px;
+}
+
+/* ── Form heading ── */
+.login-heading {
+  font-size: 14px;
+  font-weight: 700;
+  color: #7a9bb5;
+  margin-bottom: 20px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ── Error messages ── */
+.errornote {
+  background: rgba(255,59,92,0.1) !important;
+  border: 1px solid rgba(255,59,92,0.3) !important;
+  color: #ff3b5c !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  font-size: 12px !important;
+  margin-bottom: 16px !important;
+  font-family: 'Syne', sans-serif !important;
+}
+
+/* ── Form fields ── */
+.login-card .form-row {
+  margin-bottom: 16px;
+}
+
+.login-card label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #3d5a73;
+  margin-bottom: 6px;
+}
+
+.login-card input[type="text"],
+.login-card input[type="password"] {
+  width: 100%;
+  padding: 12px 16px;
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 8px;
+  color: #e2eaf4;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  box-sizing: border-box;
+}
+
+.login-card input[type="text"]:focus,
+.login-card input[type="password"]:focus {
+  border-color: #00d4ff;
+  box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+}
+
+.login-card input[type="text"]::placeholder,
+.login-card input[type="password"]::placeholder {
+  color: #3d5a73;
+}
+
+/* ── Submit button ── */
+.login-card .submit-row,
+.login-card [type="submit"] {
+  width: 100%;
+}
+
+.login-card input[type="submit"] {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+  border: none;
+  border-radius: 8px;
+  color: #0d1117;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+
+.login-card input[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(251,191,36,0.3);
+}
+
+/* ── Footer ── */
+.login-footer {
+  text-align: center;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #1e2d3d;
+}
+
+.login-footer p {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #3d5a73;
+  letter-spacing: 1px;
+}
+
+.login-footer .version {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+/* ── Animated dots ── */
+.login-logo .dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.login-logo .dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+.dot-1 { background: #00d4ff; animation-delay: 0s; }
+.dot-2 { background: #fbbf24; animation-delay: 0.3s; }
+.dot-3 { background: #00ff88; animation-delay: 0.6s; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.3; transform: scale(0.7); }
+}
+
+/* ── Hide sidebar toggle on login page ── */
+#nav-sidebar,
+#toggle-nav-sidebar,
+.sticky { display: none !important; }
+
+/* ── Remove any left margin/padding pushed by sidebar ── */
+#main, #content, #content-main,
+.main, body > * { margin-left: 0 !important; }
+
+/* ── Force perfect center ── */
+.login-page {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 !important;
+  padding: 20px !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<style>
+  /* Hide everything except our login card */
+  #nav-sidebar { display: none !important; }
+  #toggle-nav-sidebar { display: none !important; }
+  .main { margin-left: 0 !important; }
+</style>
+<div class="login-page">
+  <div class="login-card">
+
+    <!-- Logo -->
+    <div class="login-logo">
+      <span class="login-hex">⬡</span>
+      <div class="login-brand">ChandaMama <span>Retail</span></div>
+      <div class="login-tagline">Enterprise Dashboard · v2.4</div>
+      <div class="dots">
+        <div class="dot dot-1"></div>
+        <div class="dot dot-2"></div>
+        <div class="dot dot-3"></div>
+      </div>
+    </div>
+
+    <div class="login-divider"></div>
+    <div class="login-heading">🔐 Admin Sign In</div>
+
+    <!-- Error messages -->
+    {% if form.errors %}
+    <div class="errornote">
+      ❌ Invalid username or password. Please try again.
+    </div>
+    {% endif %}
+
+    <!-- Login form -->
+    <form method="post" action="{{ app_path }}">
+      {% csrf_token %}
+
+      <div class="form-row">
+        <label for="id_username">Username</label>
+        <input type="text" id="id_username" name="username"
+               placeholder="Enter username" autofocus autocomplete="username">
+      </div>
+
+      <div class="form-row">
+        <label for="id_password">Password</label>
+        <input type="password" id="id_password" name="password"
+               placeholder="Enter password" autocomplete="current-password">
+      </div>
+
+      <input type="hidden" name="next" value="{{ next }}">
+      <input type="submit" value="Sign In →">
+    </form>
+
+    <!-- Footer -->
+    <div class="login-footer">
+      <p>ChandaMama Retail Dashboard <span class="version">ERP v2.4</span></p>
+      <p style="margin-top:4px">Powered by Django · Secured · IST</p>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

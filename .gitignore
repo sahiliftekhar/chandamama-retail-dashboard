@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+staticfiles/
+media/
+
+# Environment
+.env
+*.env
+venv/
+env/
+
+# Docker
+*.override.yml
+
+# Backups
+backups/
+all_backup/
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# SonarQube
+.scannerwork/
+
+# Security reports
+security_reports/
+
+# Gunicorn
+*.ctl
+gunicorn.ctl
+backend/*.ctl
+
+# Gunicorn runtime files
+backend/gunicorn.ctl
+*.ctl
+
+# Frontend (separate repo)
+frontend/
+frontend/.git/
+
+# Temp files
+nul
+~$*
+*.docx

@@ -1,0 +1,442 @@
+{% extends "admin/base.html" %}
+
+{% block branding %}
+<h1 id="site-name">
+  <a href="/admin/" style="
+    font-family:'Syne',sans-serif;font-size:20px;font-weight:800;
+    color:#ffffff;text-decoration:none;letter-spacing:-0.5px;
+    display:flex;align-items:center;gap:8px;
+  ">
+    <span style="color:#fbbf24;font-size:22px">⬡</span>
+    ChandaMama <span style="color:#fbbf24;margin-left:4px">Retail</span>&nbsp;Dashboard
+  </a>
+</h1>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Hide Django built-in toggle ── */
+#color-theme-toggle{display:none!important}
+.theme-toggle{display:none!important}
+button[name="theme"]{display:none!important}
+#content h1{display:none!important}
+
+/* ── LIGHT mode ── */
+:root {
+  --primary:#417690; --secondary:#609ab6;
+  --body-fg:#0f172a; --body-bg:#f8fafc;
+  --body-quiet-color:#64748b;
+  --header-color:#ffffff; --header-bg:#1e3a5f;
+  --breadcrumbs-fg:#e2e8f0; --breadcrumbs-link-fg:#ffffff;
+  --link-fg:#0369a1; --link-hover-color:#0284c7;
+  --darkened-bg:#f1f5f9; --selected-bg:#e0f2fe;
+  --border-color:#e2e8f0; --hairline-color:#e2e8f0;
+  --button-bg:#417690; --button-fg:#ffffff;
+}
+
+/* ── DARK mode ── */
+[data-theme="dark"] {
+  --primary:#00d4ff; --secondary:#0ea5e9;
+  --body-fg:#e2eaf4; --body-bg:#0d1117;
+  --body-quiet-color:#7a9bb5;
+  --header-color:#e2eaf4; --header-bg:#0d1117;
+  --breadcrumbs-fg:#7a9bb5;
+  --link-fg:#00d4ff; --darkened-bg:#161d28;
+  --selected-bg:#1e2d3d; --border-color:#1e2d3d;
+  --hairline-color:#1e2d3d; --button-bg:#00d4ff; --button-fg:#080c10;
+}
+
+/* ── Typography ── */
+body,#content,.module,.form-row,h1,h2,h3,label,td,th,a {
+  font-family:'Syne',sans-serif!important;
+}
+
+/* ── Header ── */
+#header {
+  background:#1e3a5f!important;
+  border-bottom:1px solid rgba(0,212,255,0.2)!important;
+  box-shadow:0 2px 12px rgba(0,0,0,0.2)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  padding:10px 24px!important;
+}
+[data-theme="dark"] #header {
+  background:#0d1117!important;
+  border-bottom:1px solid #1e2d3d!important;
+}
+
+#branding {
+  flex:0 0 auto!important;
+}
+
+#user-tools {
+  display:flex!important;
+  align-items:center!important;
+  gap:16px!important;
+  margin-left:auto!important;
+  white-space:nowrap!important;
+  font-family:'JetBrains Mono',monospace!important;
+  font-size:11px!important;
+  color:#e2eaf4!important;
+}
+
+#user-tools a {
+  color:#00d4ff!important;
+  text-decoration:none!important;
+  transition:color .2s!important;
+}
+
+#user-tools a:hover { color:#ffffff!important; }
+
+/* ── Separator between links ── */
+#user-tools .pipe { color:#3d5a73!important; }
+
+/* ── Breadcrumbs ── */
+.breadcrumbs {
+  background:#2d4a5e!important;
+  padding:8px 20px!important;
+  font-family:'JetBrains Mono',monospace!important;
+  font-size:11px!important;
+}
+[data-theme="dark"] .breadcrumbs {
+  background:#0d1117!important;
+  border-bottom:1px solid #1e2d3d!important;
+}
+.breadcrumbs a { color:#00d4ff!important; }
+
+/* ── Sidebar ── */
+#nav-sidebar {
+  background:#ffffff!important;
+  border-right:1px solid #e2e8f0!important;
+  font-family:'Syne',sans-serif!important;
+}
+[data-theme="dark"] #nav-sidebar {
+  background:#0d1117!important;
+  border-right:1px solid #1e2d3d!important;
+}
+#nav-sidebar .current-app .section:first-child {
+  background:#1e3a5f!important;
+  color:#ffffff!important;
+  font-weight:700!important;
+  font-size:11px!important;
+  letter-spacing:1px!important;
+  text-transform:uppercase!important;
+}
+[data-theme="dark"] #nav-sidebar .current-app .section:first-child {
+  background:#111820!important;
+}
+#nav-sidebar a {
+  color:#334155!important;
+  font-size:13px!important;
+  transition:all .15s!important;
+}
+[data-theme="dark"] #nav-sidebar a { color:#7a9bb5!important; }
+#nav-sidebar a:hover {
+  color:#0369a1!important;
+  background:#f0f9ff!important;
+}
+[data-theme="dark"] #nav-sidebar a:hover {
+  color:#00d4ff!important;
+  background:#161d28!important;
+}
+#nav-sidebar #nav-filter {
+  border:1px solid #e2e8f0!important;
+  background:#ffffff!important;
+  color:#0f172a!important;
+  border-radius:6px!important;
+  font-family:'Syne',sans-serif!important;
+  font-size:12px!important;
+  padding:6px 10px!important;
+}
+[data-theme="dark"] #nav-sidebar #nav-filter {
+  background:#111820!important;
+  border-color:#1e2d3d!important;
+  color:#e2eaf4!important;
+}
+
+/* ── Content area ── */
+#content { background:var(--body-bg)!important; }
+[data-theme="dark"] #content { background:#0d1117!important; }
+[data-theme="dark"] #content-main { background:#0d1117!important; }
+
+/* ── Modules / cards ── */
+.module {
+  border-radius:8px!important;
+  border:1px solid #e2e8f0!important;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06)!important;
+  overflow:hidden!important;
+}
+[data-theme="dark"] .module {
+  background:#111820!important;
+  border-color:#1e2d3d!important;
+}
+.module h2,.module caption {
+  background:#1e3a5f!important;
+  color:#ffffff!important;
+  font-family:'Syne',sans-serif!important;
+  font-size:12px!important;
+  font-weight:700!important;
+  letter-spacing:0.5px!important;
+  padding:10px 14px!important;
+}
+[data-theme="dark"] .module h2,
+[data-theme="dark"] .module caption {
+  background:#111820!important;
+  color:#00d4ff!important;
+  border-bottom:1px solid #1e2d3d!important;
+}
+
+/* ── Tables ── */
+#result_list { border-radius:8px!important; overflow:hidden!important; }
+#result_list th {
+  background:#f8fafc!important;
+  color:#64748b!important;
+  font-family:'JetBrains Mono',monospace!important;
+  font-size:10px!important;
+  letter-spacing:1px!important;
+  text-transform:uppercase!important;
+  padding:10px 12px!important;
+  border-bottom:1px solid #e2e8f0!important;
+}
+[data-theme="dark"] #result_list th {
+  background:#111820!important;
+  color:#3d5a73!important;
+  border-bottom:1px solid #1e2d3d!important;
+}
+#result_list td {
+  padding:10px 12px!important;
+  font-size:13px!important;
+  border-bottom:1px solid #f1f5f9!important;
+  color:#334155!important;
+  transition:background .1s!important;
+}
+[data-theme="dark"] #result_list td {
+  color:#7a9bb5!important;
+  border-bottom:1px solid #1e2d3d!important;
+}
+#result_list tr:hover td {
+  background:#f0f9ff!important;
+  color:#0f172a!important;
+}
+[data-theme="dark"] #result_list tr:hover td {
+  background:#161d28!important;
+  color:#e2eaf4!important;
+}
+
+/* ── Buttons ── */
+.button,.submit-row input[type="submit"],
+.addlink,.changelink {
+  font-family:'Syne',sans-serif!important;
+  font-weight:600!important;
+  border-radius:6px!important;
+  transition:all .2s!important;
+}
+.submit-row input[type="submit"]:hover {
+  background:#28a745!important;
+  transform:translateY(-1px)!important;
+  box-shadow:0 4px 12px rgba(40,167,69,0.3)!important;
+}
+
+/* ── Add buttons (+) ── */
+.addlink { color:#00c97a!important; font-weight:700!important; }
+
+/* ── Forms ── */
+.form-row { border-bottom:1px solid #f1f5f9!important; }
+[data-theme="dark"] .form-row { border-bottom:1px solid #1e2d3d!important; }
+input[type="text"],input[type="email"],input[type="password"],
+input[type="number"],select,textarea {
+  border:1px solid #e2e8f0!important;
+  border-radius:6px!important;
+  font-family:'Syne',sans-serif!important;
+  font-size:13px!important;
+  padding:8px 12px!important;
+  transition:border-color .2s!important;
+}
+input[type="text"]:focus,input[type="password"]:focus,
+input[type="email"]:focus,select:focus,textarea:focus {
+  border-color:#00d4ff!important;
+  box-shadow:0 0 0 3px rgba(0,212,255,0.1)!important;
+  outline:none!important;
+}
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background:#111820!important;
+  border-color:#1e2d3d!important;
+  color:#e2eaf4!important;
+}
+
+/* ── Checkboxes ── */
+input[type="checkbox"] {
+  appearance:checkbox!important;
+  -webkit-appearance:checkbox!important;
+  width:15px!important;height:15px!important;
+  accent-color:#417690!important;cursor:pointer!important;
+}
+
+/* ── Filters ── */
+#changelist-filter {
+  border-radius:8px!important;
+  border:1px solid #e2e8f0!important;
+  overflow:hidden!important;
+}
+[data-theme="dark"] #changelist-filter {
+  background:#111820!important;
+  border-color:#1e2d3d!important;
+}
+#changelist-filter h2 {
+  background:#1e3a5f!important;
+  color:#ffffff!important;
+  font-family:'Syne',sans-serif!important;
+  font-size:11px!important;
+  letter-spacing:1px!important;
+  text-transform:uppercase!important;
+}
+[data-theme="dark"] #changelist-filter h2 {
+  background:#111820!important;
+  color:#00d4ff!important;
+  border-bottom:1px solid #1e2d3d!important;
+}
+#changelist-filter li.selected a { color:#0369a1!important; font-weight:700!important; }
+[data-theme="dark"] #changelist-filter li.selected a { color:#00d4ff!important; }
+
+/* ── Pagination ── */
+.paginator { font-family:'JetBrains Mono',monospace!important; font-size:11px!important; }
+
+/* ── Date hierarchy ── */
+.xfull { border-radius:6px!important; }
+
+/* ── Global theme toggle button ── */
+#global-theme-btn {
+  font-family:'Syne',sans-serif!important;
+  font-size:12px!important;font-weight:700!important;
+  padding:5px 14px!important;
+  border:1px solid rgba(255,255,255,0.25)!important;
+  color:#ffffff!important;
+  background:rgba(255,255,255,0.08)!important;
+  border-radius:6px!important;cursor:pointer!important;
+  transition:all .2s!important;margin-left:12px!important;
+  vertical-align:middle!important;
+}
+#global-theme-btn:hover { background:rgba(255,255,255,0.18)!important; }
+
+/* ── Notification bell ── */
+#notif-bell-btn {
+  font-size:18px!important;background:none!important;
+  border:none!important;cursor:pointer!important;
+  padding:4px!important;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--body-bg)}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+[data-theme="dark"] ::-webkit-scrollbar-thumb{background:#1e2d3d}
+</style>
+
+<script>
+(function(){
+  var t=localStorage.getItem('eod_theme')||'light';
+  if(t==='dark') document.documentElement.setAttribute('data-theme','dark');
+})();
+</script>
+{% endblock %}
+
+{% block usertools %}
+{% load i18n %}
+<div id="user-tools">
+  {% if user.is_active and user.is_staff %}
+    WELCOME, <strong>{{ user.get_full_name|default:user.get_username }}</strong>
+    &nbsp;|&nbsp;
+    <a href="/">VIEW SITE</a> |
+    <a href="/admin/password_change/">CHANGE PASSWORD</a> |
+    <a href="/admin/logout/">LOG OUT</a>
+  {% endif %}
+</div>
+<span id="notif-bell" style="position:relative;display:inline-flex;align-items:center;margin-left:12px;vertical-align:middle;">
+  <button id="notif-bell-btn"
+    onclick="toggleNotifPanel()"
+    onkeypress="toggleNotifPanel()"
+    title="Stock Alerts"
+    aria-label="Stock Alerts Notification Bell"
+    tabindex="0"
+    style="font-size:18px;background:none;border:none;cursor:pointer;position:relative;padding:4px;line-height:1;">
+    🔔<span id="notif-count" style="position:absolute;top:-2px;right:-4px;background:#dc2626;color:#fff;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center;font-family:Syne,sans-serif;">&nbsp;</span>
+  </button>
+</span>
+<dialog id="notif-panel" aria-label="Stock Alerts Panel" style="display:none;position:fixed;top:52px;right:16px;width:360px;max-height:480px;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.15);z-index:99999;overflow:hidden;font-family:'Syne',sans-serif;">
+  <div class="notif-header" style="padding:14px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;">
+    <h3 style="font-size:13px;font-weight:700;color:#0f172a;margin:0;">🔔 Stock Alerts</h3>
+    <button onclick="toggleNotifPanel()" style="background:none;border:none;cursor:pointer;font-size:16px;color:#94a3b8;">✕</button>
+  </div>
+  <div id="notif-body" style="overflow-y:auto;max-height:400px;"><div style="text-align:center;padding:28px;font-size:11px;color:#94a3b8;font-family:monospace;">Loading...</div></div>
+</dialog>
+<button id="notif-toast" onclick="toggleNotifPanel()" onkeydown="if(event.key==='Enter'||event.key===' ')toggleNotifPanel()" style="position:fixed;bottom:24px;right:24px;background:#ff3b5c;color:#000000;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:12px 20px;border-radius:8px;box-shadow:0 8px 24px rgba(255,59,92,0.4);z-index:99999;display:none;cursor:pointer;border:none;transition:all .2s;" aria-label="Stock alerts notification"></button>
+<button id="global-theme-btn" onclick="globalToggleTheme()">☀️ Light</button>
+<script>
+(function(){
+  var t=localStorage.getItem('eod_theme')||'light';
+  var btn=document.getElementById('global-theme-btn');
+  if(btn) btn.textContent=t==='dark'?'🌙 Dark':'☀️ Light';
+})();
+function globalToggleTheme(){
+  var html=document.documentElement,btn=document.getElementById('global-theme-btn');
+  var current=localStorage.getItem('eod_theme')||'light';
+  if(current==='light'){html.setAttribute('data-theme','dark');btn.textContent='🌙 Dark';localStorage.setItem('eod_theme','dark');}
+  else{html.removeAttribute('data-theme');btn.textContent='☀️ Light';localStorage.setItem('eod_theme','light');}
+}
+var notifOpen=false,lastCount=0;
+function toggleNotifPanel(){
+  var p=document.getElementById('notif-panel');
+  notifOpen=!notifOpen;
+  if(notifOpen){p.style.display='block';loadNotifications();setTimeout(function(){document.addEventListener('click',closeOut);},100);}
+  else{p.style.display='none';}
+}
+function closeOut(e){
+  var p=document.getElementById('notif-panel'),b=document.getElementById('notif-bell');
+  if(!p.contains(e.target)&&!b.contains(e.target)){p.style.display='none';notifOpen=false;document.removeEventListener('click',closeOut);}
+}
+function loadNotifications(){
+  fetch('/admin/api/stock-alerts/').then(function(r){return r.json();}).then(renderNotifications).catch(function(){renderNotifications({critical:[],low:[],dead:[]});});
+}
+function renderNotifications(data){
+  var body=document.getElementById('notif-body'),count=document.getElementById('notif-count');
+  var total=(data.critical||[]).length+(data.low||[]).length+(data.dead||[]).length;
+  if(total===0){body.innerHTML='<div style="text-align:center;padding:28px;font-size:11px;color:#94a3b8;font-family:monospace;">✅ All stock healthy!</div>';count.style.display='none';return;}
+  count.textContent=total>9?'9+':total;count.style.display='flex';
+  var html='';
+  if(data.critical&&data.critical.length){
+    html+='<div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#94a3b8;padding:10px 16px 6px;">🔴 CRITICAL</div>';
+    data.critical.forEach(function(i){html+='<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid #f1f5f9;"><span style="font-size:16px;">🚨</span><div style="flex:1"><div style="font-size:12px;font-weight:700;color:#0f172a;">'+i.product+' ('+i.size+')</div><div style="font-size:10px;color:#94a3b8;font-family:monospace;">'+i.section+' › '+i.category+' · '+i.quantity+' left</div></div><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(255,59,92,0.1);color:#ff3b5c;border:1px solid rgba(255,59,92,0.2);align-self:center;">CRITICAL</span></div>';});
+  }
+  if(data.low&&data.low.length){
+    html+='<div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#94a3b8;padding:10px 16px 6px;">🟡 LOW STOCK</div>';
+    data.low.forEach(function(i){html+='<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid #f1f5f9;"><span style="font-size:16px;">⚠️</span><div style="flex:1"><div style="font-size:12px;font-weight:700;color:#0f172a;">'+i.product+' ('+i.size+')</div><div style="font-size:10px;color:#94a3b8;font-family:monospace;">'+i.section+' › '+i.category+' · '+i.quantity+' left</div></div><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(255,107,53,0.1);color:#ff6b35;border:1px solid rgba(255,107,53,0.2);align-self:center;">LOW</span></div>';});
+  }
+  if(data.dead&&data.dead.length){
+    html+='<div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#94a3b8;padding:10px 16px 6px;">☠️ DEAD STOCK</div>';
+    data.dead.forEach(function(i){html+='<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid #f1f5f9;"><span style="font-size:16px;">📦</span><div style="flex:1"><div style="font-size:12px;font-weight:700;color:#0f172a;">'+i.product+' ('+i.size+')</div><div style="font-size:10px;color:#94a3b8;font-family:monospace;">'+(i.days?i.days+'d no sale':'Never sold')+' · ₹'+i.at_risk+' at risk</div></div><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(217,119,6,0.1);color:#d97706;border:1px solid rgba(217,119,6,0.2);align-self:center;">DEAD</span></div>';});
+  }
+  body.innerHTML=html;
+}
+function checkAlertCount(){
+  fetch('/admin/api/stock-alerts/').then(function(r){return r.json();}).then(function(data){
+    var total=(data.critical||[]).length+(data.low||[]).length+(data.dead||[]).length;
+    var count=document.getElementById('notif-count');
+    if(total>0){count.textContent=total>9?'9+':total;count.style.display='flex';if(total>lastCount&&lastCount>=0){showToast(total+' stock alert'+(total>1?'s':'')+' need attention!');}}
+    else{count.style.display='none';}
+    lastCount=total;
+  }).catch(function(){});
+}
+function showToast(msg){
+  var t=document.getElementById('notif-toast');
+  t.textContent='🔔 '+msg;t.style.display='block';
+  setTimeout(function(){t.style.display='none';},5000);
+}
+window.addEventListener('DOMContentLoaded',function(){checkAlertCount();setInterval(checkAlertCount,300000);});
+</script>
+{% endblock %}

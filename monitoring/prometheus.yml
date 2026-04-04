@@ -1,0 +1,36 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'chandamama-monitor'
+
+# ── Alerting rules ─────────────────────────────────────────────────
+rule_files:
+  - "alerts.yml"
+
+# ── Scrape targets ─────────────────────────────────────────────────
+scrape_configs:
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Django backend metrics
+  - job_name: 'django'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    # Add host header to bypass ALLOWED_HOSTS check
+    params: {}
+    relabel_configs:
+      - target_label: __address__
+        replacement: backend:8000
+
+  # Host system metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+
+  # Remove postgres target — it doesn't expose /metrics

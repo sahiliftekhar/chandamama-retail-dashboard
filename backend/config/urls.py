@@ -13,6 +13,7 @@ def home_redirect(request):
 
 urlpatterns = [
     path("",                    home_redirect),
+    path('', include('django_prometheus.urls')),  # adds /metrics endpoint
     path("admin/",              my_admin.urls),
     path("api/health/",         health_check,    name="health_check"),
     path("api/status/",         system_status,   name="system_status"),

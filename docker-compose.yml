@@ -33,8 +33,11 @@ services:
     restart: always
     env_file:
       - .env
+    environment:
+      - ALLOWED_HOSTS=*
+      - DEBUG=True
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8000/api/health/ || exit 1"]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health/')\" || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -50,7 +53,7 @@ services:
       - backend
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:80 || exit 1"]
+      test: ["CMD-SHELL", "nc -z localhost 80 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -69,11 +72,6 @@ services:
       - backend
       - frontend
     restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:80 || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   # ── SonarQube (Code Quality) ──────────────────────────────────────
   sonarqube:
@@ -94,7 +92,7 @@ services:
       - sonarqube_extensions:/opt/sonarqube/extensions
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:9000/api/system/status | grep -q UP || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/api/system/status | grep -q UP || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 10
@@ -117,6 +115,68 @@ services:
       timeout: 5s
       retries: 5
 
+  # ── Prometheus (Metrics Collection) ──────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9090/-/healthy || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Grafana (Dashboards) ──────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER:     admin
+      GF_SECURITY_ADMIN_PASSWORD: chandamama@2026
+      GF_USERS_ALLOW_SIGN_UP:     "false"
+      GF_SERVER_DOMAIN:           localhost
+      GF_SMTP_ENABLED:            "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Node Exporter (Host Metrics) ──────────────────────────────────
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    restart: unless-stopped
+
 volumes:
   static_volume:
   postgres_data:
@@ -124,3 +184,5 @@ volumes:
   sonarqube_logs:
   sonarqube_extensions:
   sonar_postgres_data:
+  prometheus_data:
+  grafana_data:

@@ -22,6 +22,7 @@ DEBUG         = env('DEBUG', default=True)
 ALLOWED_HOSTS = env('ALLOWED_HOSTS', default=['*'])
 
 INSTALLED_APPS = [
+    'django_prometheus',   # ← add at TOP
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -34,6 +35,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',  # ← FIRST
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

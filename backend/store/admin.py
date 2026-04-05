@@ -727,12 +727,15 @@ class StockInline(admin.TabularInline):
     verbose_name_plural = "Sizes & Stock"
 
 
-class PricingInline(admin.StackedInline):
+class PricingInline(admin.TabularInline):
     model   = Pricing
     extra   = 1
-    max_num = 1
-    fields  = ("purchase_rate", "marked_price", "selling_price")
-    verbose_name = "Pricing"
+    min_num = 0
+    # ✅ Fix 1: size added so each size can have its own price
+    # ✅ Fix 3: selling_price removed — it's entered only during EOD sale
+    fields  = ("size", "purchase_rate", "marked_price")
+    verbose_name        = "Size Pricing"
+    verbose_name_plural = "Size-based Pricing (add one row per size)"
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -813,8 +816,7 @@ class ProductAdmin(AuditLogMixin, admin.ModelAdmin):
 
 @admin.register(Pricing, site=my_admin)
 class PricingAdmin(AuditLogMixin, admin.ModelAdmin):
-    list_display  = ("product", "purchase_rate", "marked_price",
-                     "selling_price", "margin_display")
+    list_display  = ("product", "size", "purchase_rate", "marked_price", "margin_display")
     search_fields = ("product__name",)
 
     @admin.display(description="Margin %")

@@ -730,8 +730,12 @@ class MyAdminSite(admin.AdminSite):
 
         def auto_width(ws):
             for col in ws.columns:
-                w = max((len(str(c.value or "")) for c in col), default=10)
-                ws.column_dimensions[col[0].column_letter].width = min(w + 6, 45)
+                try:
+                    col_letter = col[0].column_letter
+                    w = max((len(str(c.value or "")) for c in col if hasattr(c, 'value')), default=10)
+                    ws.column_dimensions[col_letter].width = min(w + 6, 45)
+                except AttributeError:
+                    pass
 
         def add_row_colors(ws, data_start=5, profit_col=None, alt=True):
             for row_idx, row in enumerate(ws.iter_rows(min_row=data_start, max_row=ws.max_row), 1):

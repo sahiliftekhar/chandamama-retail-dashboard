@@ -6,6 +6,7 @@ router = DefaultRouter()
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('health/', views.health_check, name='health_check'),
-    path('status/', views.system_status, name='system_status'),
+    path('health/',     views.health_check,   name='health_check'),
+    path('status/',     views.system_status,  name='system_status'),
+    path('dashboard/',  views.dashboard_api,  name='dashboard_api'),
 ]

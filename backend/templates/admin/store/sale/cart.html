@@ -1,0 +1,230 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}Add Sale — Cart{% endblock %}
+
+{% block content %}
+<style>
+  .cart-wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  .cart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .cart-header h1 { color:#00d4ff; font-size:22px; margin:0; }
+  .cart-table { width:100%; border-collapse:collapse; background:#0d1b2a; border-radius:10px; overflow:hidden; }
+  .cart-table th { background:#1a2d3d; color:#00d4ff; padding:12px 10px; text-align:left; font-size:12px; text-transform:uppercase; }
+  .cart-table td { padding:10px; border-bottom:1px solid #1e2d3d; vertical-align:middle; }
+  .cart-table select, .cart-table input { background:#1a2d3d; border:1px solid #2a3d4d; color:#e2e8f0; padding:6px 10px; border-radius:6px; width:100%; font-size:13px; }
+  .hint-text { color:#fbbf24; font-size:10px; margin-top:3px; font-family:monospace; }
+  .btn-add-row { background:#1a2d3d; border:1px dashed #00d4ff; color:#00d4ff; padding:8px 20px; border-radius:8px; cursor:pointer; margin:10px 0; font-size:13px; }
+  .btn-remove { background:none; border:none; color:#ff3b5c; cursor:pointer; font-size:16px; }
+  .payment-section { background:#0d1b2a; border-radius:10px; padding:20px; margin:20px 0; }
+  .payment-section h3 { color:#fbbf24; margin:0 0 15px; font-size:14px; }
+  .payment-row { display:flex; gap:15px; flex-wrap:wrap; align-items:flex-end; }
+  .payment-field { display:flex; flex-direction:column; gap:5px; flex:1; min-width:180px; }
+  .payment-field label { color:#94a3b8; font-size:11px; text-transform:uppercase; }
+  .payment-field select, .payment-field input { background:#1a2d3d; border:1px solid #2a3d4d; color:#e2e8f0; padding:8px 12px; border-radius:6px; font-size:13px; }
+  .customer-fields { display:none; margin-top:15px; }
+  .customer-fields.show { display:flex; gap:15px; flex-wrap:wrap; }
+  .cart-summary { background:#1a2d3d; border-radius:10px; padding:15px 20px; display:flex; gap:30px; margin:10px 0; flex-wrap:wrap; }
+  .summary-item .label { color:#94a3b8; font-size:10px; text-transform:uppercase; display:block; }
+  .summary-item .value { color:#00d4ff; font-size:18px; font-weight:700; }
+  .btn-save { background:linear-gradient(135deg,#00d4ff,#0099cc); color:#000; border:none; padding:12px 40px; border-radius:8px; font-size:15px; font-weight:700; cursor:pointer; }
+  .btn-save:disabled { opacity:0.5; cursor:not-allowed; }
+  .success-msg { background:#00ff8822; border:1px solid #00ff88; color:#00ff88; padding:12px 20px; border-radius:8px; margin:10px 0; display:none; }
+  .error-msg { background:#ff3b5c22; border:1px solid #ff3b5c; color:#ff3b5c; padding:12px 20px; border-radius:8px; margin:10px 0; display:none; }
+</style>
+
+<div class="cart-wrap">
+  <div class="cart-header">
+    <h1>🛒 Add Sale — Multi-Product Cart</h1>
+    <a href="../" style="background:#00d4ff22;border:1px solid #00d4ff;color:#00d4ff;padding:8px 16px;border-radius:6px;text-decoration:none;font-size:13px;">← Back to Sales</a>
+  </div>
+
+  <div id="successMsg" class="success-msg"></div>
+  <div id="errorMsg" class="error-msg"></div>
+
+  <table class="cart-table" id="cartTable">
+    <thead>
+      <tr>
+        <th style="width:28%">Product</th>
+        <th style="width:20%">Size</th>
+        <th style="width:8%">Qty</th>
+        <th style="width:14%">Selling Price</th>
+        <th style="width:10%">Discount</th>
+        <th style="width:15%">Pricing Info</th>
+        <th style="width:5%"></th>
+      </tr>
+    </thead>
+    <tbody id="cartBody"></tbody>
+  </table>
+
+  <button class="btn-add-row" onclick="addRow()">+ Add Another Product</button>
+
+  <div class="payment-section">
+    <h3>💳 Payment Details</h3>
+    <div class="payment-row">
+      <div class="payment-field">
+        <label>Payment Mode</label>
+        <select id="paymentMode" onchange="toggleCustomer()">
+          <option value="cash">💵 Cash</option>
+          <option value="phonepay">📱 PhonePe</option>
+          <option value="due">⏳ Due (Pay Later)</option>
+        </select>
+      </div>
+      <div class="payment-field">
+        <label>Sold Date</label>
+        <input type="date" id="soldDate">
+      </div>
+    </div>
+    <div class="customer-fields" id="customerFields">
+      <div class="payment-field">
+        <label>Customer Name *</label>
+        <input type="text" id="customerName" placeholder="Customer name">
+      </div>
+      <div class="payment-field">
+        <label>Customer Phone *</label>
+        <input type="text" id="customerPhone" placeholder="Phone number">
+      </div>
+    </div>
+  </div>
+
+  <div class="cart-summary">
+    <div class="summary-item"><span class="label">Items</span><span class="value" id="summaryItems">0</span></div>
+    <div class="summary-item"><span class="label">Total Amount</span><span class="value" id="summaryTotal">₹0</span></div>
+  </div>
+
+  <button class="btn-save" id="saveBtn" onclick="saveCart()">💾 Save All Sales</button>
+</div>
+
+<script>
+const PRODUCTS = {{ products_json|safe }};
+let rowCount = 0;
+document.getElementById('soldDate').value = new Date().toISOString().split('T')[0];
+
+function addRow() {
+  rowCount++;
+  const tbody = document.getElementById('cartBody');
+  const tr = document.createElement('tr');
+  tr.id = 'row_' + rowCount;
+  tr.innerHTML = `
+    <td><select onchange="loadSizes(this,${rowCount})" id="product_${rowCount}">
+      <option value="">— Select Product —</option>
+      ${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}
+    </select></td>
+    <td><select id="size_${rowCount}" onchange="updateHint(${rowCount})">
+      <option value="">— Select Product First —</option>
+    </select></td>
+    <td><input type="number" id="qty_${rowCount}" value="1" min="1" onchange="updateSummary()"></td>
+    <td><input type="number" id="price_${rowCount}" value="" step="0.01" onchange="updateSummary()"></td>
+    <td><input type="number" id="discount_${rowCount}" value="0" step="0.01"></td>
+    <td><div class="hint-text" id="hint_${rowCount}">—</div><input type="hidden" id="pricingId_${rowCount}"></td>
+    <td><button class="btn-remove" onclick="removeRow(${rowCount})">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+  updateSummary();
+}
+
+function removeRow(id) {
+  const row = document.getElementById('row_' + id);
+  if (row) row.remove();
+  updateSummary();
+}
+
+function loadSizes(sel, rowId) {
+  const pid = sel.value;
+  const ss = document.getElementById('size_' + rowId);
+  ss.innerHTML = '<option value="">Loading...</option>';
+  document.getElementById('hint_' + rowId).textContent = '—';
+  document.getElementById('pricingId_' + rowId).value = '';
+  if (!pid) { ss.innerHTML = '<option value="">— Select Product First —</option>'; return; }
+  fetch('/admin/api/product-sizes/?product_id=' + pid)
+    .then(r => r.json())
+    .then(data => {
+      ss.innerHTML = '<option value="">— Select Size —</option>';
+      data.sizes.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.size;
+        opt.dataset.pricingId = s.pricing_id;
+        opt.dataset.purchase = s.purchase_rate;
+        opt.dataset.marked = s.marked_price;
+        opt.dataset.min = s.min_selling;
+        opt.textContent = s.size + (s.marked_price ? ' — ₹' + s.marked_price : '');
+        ss.appendChild(opt);
+      });
+      if (data.sizes.length === 1) { ss.selectedIndex = 1; updateHint(rowId); }
+    });
+}
+
+function updateHint(rowId) {
+  const ss = document.getElementById('size_' + rowId);
+  const opt = ss.options[ss.selectedIndex];
+  const hint = document.getElementById('hint_' + rowId);
+  const pid = document.getElementById('pricingId_' + rowId);
+  const price = document.getElementById('price_' + rowId);
+  if (!opt || !opt.dataset.purchase) { hint.textContent = '—'; pid.value = ''; return; }
+  pid.value = opt.dataset.pricingId || '';
+  hint.textContent = '₹' + opt.dataset.purchase + ' → ₹' + opt.dataset.marked + ' | Min: ₹' + opt.dataset.min;
+  if (!price.value || price.value === '0') price.value = opt.dataset.marked;
+  updateSummary();
+}
+
+function toggleCustomer() {
+  document.getElementById('customerFields').classList.toggle('show', document.getElementById('paymentMode').value === 'due');
+}
+
+function updateSummary() {
+  let total = 0, items = 0;
+  document.querySelectorAll('[id^="row_"]').forEach(row => {
+    const id = row.id.replace('row_', '');
+    const qty = parseFloat(document.getElementById('qty_' + id)?.value || 0);
+    const price = parseFloat(document.getElementById('price_' + id)?.value || 0);
+    if (qty && price) { total += qty * price; items++; }
+  });
+  document.getElementById('summaryItems').textContent = items;
+  document.getElementById('summaryTotal').textContent = '₹' + total.toFixed(2);
+}
+
+function saveCart() {
+  const rows = document.querySelectorAll('[id^="row_"]');
+  const items = [];
+  for (const row of rows) {
+    const id = row.id.replace('row_', '');
+    const productId = document.getElementById('product_' + id)?.value;
+    const size = document.getElementById('size_' + id)?.value;
+    const pricingId = document.getElementById('pricingId_' + id)?.value;
+    const qty = document.getElementById('qty_' + id)?.value;
+    const price = document.getElementById('price_' + id)?.value;
+    const discount = document.getElementById('discount_' + id)?.value || 0;
+    if (!productId || !size || !qty || !price) { showError('Please fill all fields for each row.'); return; }
+    items.push({ product_id: productId, size, pricing_id: pricingId || null, quantity: qty, selling_price: price, discount });
+  }
+  if (!items.length) { showError('Please add at least one product.'); return; }
+  const paymentMode = document.getElementById('paymentMode').value;
+  const customerName = document.getElementById('customerName').value.trim();
+  const customerPhone = document.getElementById('customerPhone').value.trim();
+  const soldDate = document.getElementById('soldDate').value;
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  fetch('/admin/store/sale/add-cart/save/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+    body: JSON.stringify({ items, payment_mode: paymentMode, customer_name: customerName, customer_phone: customerPhone, sold_date: soldDate })
+  })
+  .then(r => r.json())
+  .then(data => {
+    btn.disabled = false; btn.textContent = '💾 Save All Sales';
+    if (data.saved) {
+      showSuccess('✅ ' + data.message);
+      document.getElementById('cartBody').innerHTML = '';
+      rowCount = 0; updateSummary(); addRow();
+      if (data.errors?.length) showError('Some failed: ' + data.errors.map(e=>e.error).join(', '));
+    } else { showError(data.error || 'Save failed'); }
+  })
+  .catch(err => { btn.disabled = false; btn.textContent = '💾 Save All Sales'; showError('Error: ' + err.message); });
+}
+
+function showSuccess(msg) { const el = document.getElementById('successMsg'); el.textContent = msg; el.style.display = 'block'; setTimeout(()=>el.style.display='none', 5000); }
+function showError(msg) { const el = document.getElementById('errorMsg'); el.textContent = msg; el.style.display = 'block'; setTimeout(()=>el.style.display='none', 8000); }
+function getCookie(name) { let v=null; document.cookie.split(';').forEach(c=>{const[k,val]=c.trim().split('=');if(k===name)v=decodeURIComponent(val);}); return v; }
+
+addRow();
+</script>
+{% endblock %}

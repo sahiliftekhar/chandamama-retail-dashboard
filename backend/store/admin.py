@@ -3,6 +3,7 @@
 #  With: Date Range Filter + Section Filter + Search
 # ============================================================
 
+from django.contrib.admin import DateFieldListFilter
 import json
 from datetime import timedelta, date
 from decimal import Decimal
@@ -51,8 +52,10 @@ class MyAdminSite(admin.AdminSite):
     def get_urls(self):
         urls = super().get_urls()
         custom = [
-            path("export-excel/", self.admin_view(self.export_excel_view), name="export_excel"),
-            path("api/stock-alerts/", self.admin_view(self.stock_alerts_api), name="stock_alerts_api"),
+            path("export-excel/",          self.admin_view(self.export_excel_view),    name="export_excel"),
+            path("api/stock-alerts/",      self.admin_view(self.stock_alerts_api),     name="stock_alerts_api"),
+            path("api/product-sizes/",     self.admin_view(self.product_sizes_api),    name="product_sizes_api"),
+            path("api/dashboard-data/",    self.admin_view(self.dashboard_data_api),   name="dashboard_data_api"),
         ]
         return custom + urls
 
@@ -68,7 +71,7 @@ class MyAdminSite(admin.AdminSite):
 
         # ── Build date filter ─────────────────────────────────────
         if date_range == "today":
-            date_filter = Q(sold_date__date=today)
+            date_filter = Q(sold_date=today)
             range_label = "Today"
         elif date_range == "week":
             date_filter = Q(sold_date__gte=timezone.now() - timedelta(days=7))
@@ -79,6 +82,27 @@ class MyAdminSite(admin.AdminSite):
         elif date_range == "all":
             date_filter = Q()
             range_label = "All Time"
+        elif date_range == "custom":
+            from_date = request.GET.get("from_date")
+            to_date   = request.GET.get("to_date")
+            try:
+                from datetime import datetime
+                if from_date and to_date:
+                    fd = datetime.strptime(from_date, "%Y-%m-%d").date()
+                    td = datetime.strptime(to_date,   "%Y-%m-%d").date()
+                    date_filter = Q(sold_date__range=(fd, td))
+                    range_label = f"{fd.strftime('%d %b')} → {td.strftime('%d %b %Y')}"
+                elif from_date:
+                    fd = datetime.strptime(from_date, "%Y-%m-%d").date()
+                    date_filter = Q(sold_date=fd)
+                    range_label = fd.strftime("%d %b %Y")
+                else:
+                    date_filter = Q(sold_date=today)
+                    range_label = "Today"
+            except Exception as e:
+                print("DATE ERROR:", e)
+                date_filter = Q(sold_date=today)
+                range_label = "Today"
         else:  # year (default)
             date_filter = Q(sold_date__year=year)
             range_label = f"FY {year}"
@@ -99,6 +123,11 @@ class MyAdminSite(admin.AdminSite):
         # ── Combined base queryset ────────────────────────────────
         base_qs = Sale.objects.filter(date_filter & section_filter)
 
+        # ── DEBUG ─────────────────────────────────────────────────
+        print("GET PARAMS:", request.GET)
+        print("DATE FILTER:", date_filter)
+        print("RESULT COUNT:", base_qs.count())
+
         # ── Search filter (for top products) ─────────────────────
         if search_query:
             search_filter = Q(product__name__icontains=search_query)
@@ -106,7 +135,7 @@ class MyAdminSite(admin.AdminSite):
             search_filter = Q()
 
         # ── KPIs: Today (always today, no filter) ─────────────────
-        sales_today = Sale.objects.filter(sold_date__date=today)
+        sales_today = Sale.objects.filter(sold_date=today)
         total_revenue_today = sales_today.aggregate(t=Sum("selling_price"))["t"] or Decimal("0")
         total_profit_today  = sales_today.aggregate(t=Sum("profit"))["t"]        or Decimal("0")
         total_units_today   = sales_today.aggregate(t=Sum("quantity"))["t"]      or 0
@@ -117,16 +146,6 @@ class MyAdminSite(admin.AdminSite):
         total_units_period   = base_qs.aggregate(t=Sum("quantity"))["t"]      or 0
 
         # ── Monthly Revenue (always full year for chart) ──────────
-        monthly_qs = (
-            Sale.objects
-            .filter(sold_date__year=year & section_filter if section_id != "all"
-                    else Q(sold_date__year=year))
-            .annotate(month=TruncMonth("sold_date"))
-            .values("month")
-            .annotate(revenue=Sum("selling_price"), profit=Sum("profit"))
-            .order_by("month")
-        )
-        # simpler approach
         monthly_base = Sale.objects.filter(sold_date__year=year)
         if section_id != "all":
             monthly_base = monthly_base.filter(section_filter)
@@ -226,7 +245,7 @@ class MyAdminSite(admin.AdminSite):
             product_id__in=sold_recently
         ).select_related(
             "product", "product__category",
-            "product__category__section", "product__pricing"
+            "product__category__section"
         ).annotate(last_sold=Max("product__sale__sold_date"))
 
         if section_id != "all":
@@ -328,6 +347,8 @@ class MyAdminSite(admin.AdminSite):
             # Filter state
             all_sections=all_sections,
             active_range=date_range,
+            active_from_date=request.GET.get("from_date", ""),
+            active_to_date=request.GET.get("to_date", ""),
             active_section=section_id,
             range_label=range_label,
             section_label=section_label,
@@ -342,6 +363,260 @@ class MyAdminSite(admin.AdminSite):
 
     # ── EXCEL EXPORT ──────────────────────────────────────────────
     # ── STOCK ALERTS API (for real-time notifications) ────────
+    def dashboard_data_api(self, request):
+        """AJAX endpoint — returns all dashboard data as JSON for no-reload filtering"""
+        from django.http import JsonResponse
+
+        today = timezone.now().date()
+        year  = today.year
+
+        date_range   = request.GET.get("range", "year")
+        section_id   = request.GET.get("section", "all")
+        search_query = request.GET.get("q", "").strip()
+
+        # ── Date filter ──────────────────────────────────────────
+        if date_range == "today":
+            date_filter = Q(sold_date=today)
+            range_label = "Today"
+        elif date_range == "week":
+            date_filter = Q(sold_date__gte=timezone.now() - timedelta(days=7))
+            range_label = "Last 7 Days"
+        elif date_range == "month":
+            date_filter = Q(sold_date__year=today.year, sold_date__month=today.month)
+            range_label = "This Month"
+        elif date_range == "all":
+            date_filter = Q()
+            range_label = "All Time"
+        elif date_range == "custom":
+            from_date = request.GET.get("from_date")
+            to_date   = request.GET.get("to_date")
+            try:
+                from datetime import datetime as _dt
+                if from_date and to_date:
+                    fd = _dt.strptime(from_date, "%Y-%m-%d").date()
+                    td = _dt.strptime(to_date,   "%Y-%m-%d").date()
+                    date_filter = Q(sold_date__range=(fd, td))
+                    range_label = f"{fd.strftime('%d %b')} → {td.strftime('%d %b %Y')}"
+                elif from_date:
+                    fd = _dt.strptime(from_date, "%Y-%m-%d").date()
+                    date_filter = Q(sold_date=fd)
+                    range_label = fd.strftime("%d %b %Y")
+                else:
+                    date_filter = Q(sold_date=today)
+                    range_label = "Today"
+            except Exception:
+                date_filter = Q(sold_date=today)
+                range_label = "Today"
+        else:
+            date_filter = Q(sold_date__year=year)
+            range_label = f"FY {year}"
+
+        # ── Section filter ───────────────────────────────────────
+        section_filter = Q()
+        section_label  = "All Sections"
+        if section_id != "all":
+            try:
+                sec = Section.objects.get(pk=section_id)
+                section_filter = Q(product__category__section=sec)
+                section_label  = sec.name
+            except Section.DoesNotExist:
+                pass
+
+        base_qs = Sale.objects.filter(date_filter & section_filter)
+        search_filter = Q(product__name__icontains=search_query) if search_query else Q()
+
+        # ── KPIs ─────────────────────────────────────────────────
+        sales_today = Sale.objects.filter(sold_date=today)
+        total_revenue_today  = float(sales_today.aggregate(t=Sum("selling_price"))["t"] or 0)
+        total_profit_today   = float(sales_today.aggregate(t=Sum("profit"))["t"] or 0)
+        total_units_today    = sales_today.aggregate(t=Sum("quantity"))["t"] or 0
+        total_revenue_period = float(base_qs.aggregate(t=Sum("selling_price"))["t"] or 0)
+        total_profit_period  = float(base_qs.aggregate(t=Sum("profit"))["t"] or 0)
+        total_units_period   = base_qs.aggregate(t=Sum("quantity"))["t"] or 0
+        margin_pct = round(total_profit_period / total_revenue_period * 100, 1) if total_revenue_period else 0
+
+        # ── Monthly chart ────────────────────────────────────────
+        monthly_base = Sale.objects.filter(sold_date__year=year)
+        if section_id != "all":
+            monthly_base = monthly_base.filter(section_filter)
+        monthly_qs = (monthly_base.annotate(month=TruncMonth("sold_date"))
+                      .values("month").annotate(revenue=Sum("selling_price"), profit=Sum("profit"))
+                      .order_by("month"))
+        monthly_map_rev    = {e["month"].month: float(e["revenue"] or 0) for e in monthly_qs}
+        monthly_map_profit = {e["month"].month: float(e["profit"]  or 0) for e in monthly_qs}
+        monthly_labels  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+        monthly_revenue = [monthly_map_rev.get(m, 0)    for m in range(1, 13)]
+        monthly_profit  = [monthly_map_profit.get(m, 0) for m in range(1, 13)]
+
+        # ── MoM Growth ───────────────────────────────────────────
+        growth_data = [None]
+        for i in range(1, 12):
+            prev, curr = monthly_revenue[i-1], monthly_revenue[i]
+            growth_data.append(round((curr-prev)/prev*100, 1) if prev and prev > 0 else None)
+
+        # ── Weekly ───────────────────────────────────────────────
+        weekly_qs = (base_qs.filter(sold_date__gte=timezone.now() - timedelta(days=7))
+                     .annotate(day=TruncDate("sold_date")).values("day")
+                     .annotate(revenue=Sum("selling_price"), profit=Sum("profit")).order_by("day"))
+        weekly_labels  = [e["day"].strftime("%d %b") for e in weekly_qs]
+        weekly_revenue = [float(e["revenue"] or 0) for e in weekly_qs]
+        weekly_profit  = [float(e["profit"]  or 0) for e in weekly_qs]
+
+        # ── Category Distribution ────────────────────────────────
+        cat_qs = (base_qs.values("product__category__name", "product__category__section__name")
+                  .annotate(revenue=Sum("selling_price")).order_by("-revenue"))
+        total_cat_rev = sum(float(c["revenue"] or 0) for c in cat_qs) or 1
+        cat_labels = [f"{c['product__category__section__name']} › {c['product__category__name']}" for c in cat_qs]
+        cat_data   = [round(float(c["revenue"] or 0) / total_cat_rev * 100, 1) for c in cat_qs]
+
+        # ── Top Products ─────────────────────────────────────────
+        top_products = list(base_qs.filter(search_filter)
+                            .values("product__name", "product__category__name", "product__category__section__name")
+                            .annotate(units=Sum("quantity"), revenue=Sum("selling_price"), profit=Sum("profit"))
+                            .order_by("-units")[:10])
+        for p in top_products:
+            p["revenue"] = float(p["revenue"] or 0)
+            p["profit"]  = float(p["profit"]  or 0)
+
+        # ── Low Stock ────────────────────────────────────────────
+        low_stock_items = []
+        stock_qs = Stock.objects.select_related("product","product__category","product__category__section").order_by("quantity")
+        if section_id != "all":
+            stock_qs = stock_qs.filter(product__category__section_id=section_id)
+        for stock in stock_qs:
+            thr = stock.product.low_stock_threshold
+            if stock.quantity <= thr:
+                pct = int(stock.quantity / thr * 100) if thr else 0
+                low_stock_items.append({
+                    "product": stock.product.name,
+                    "section": stock.product.category.section.name if stock.product.category.section else "—",
+                    "category": stock.product.category.name,
+                    "size": stock.size, "quantity": stock.quantity,
+                    "threshold": thr, "pct": pct,
+                    "critical": stock.quantity <= max(1, thr // 3),
+                })
+
+        # ── Dead Stock ───────────────────────────────────────────
+        dead_cutoff   = today - timedelta(days=DEAD_STOCK_DAYS)
+        sold_recently = Sale.objects.filter(sold_date__gte=dead_cutoff).values_list("product_id", flat=True).distinct()
+        dead_qs = (Stock.objects.filter(quantity__gt=0).exclude(product_id__in=sold_recently)
+                   .select_related("product","product__category","product__category__section")
+                   .annotate(last_sold=Max("product__sale__sold_date")))
+        if section_id != "all":
+            dead_qs = dead_qs.filter(product__category__section_id=section_id)
+        dead_stock_items = []
+        for s in dead_qs.order_by(F("last_sold").asc(nulls_first=True))[:20]:
+            ls   = s.last_sold.date() if s.last_sold else None
+            days = (today - ls).days if ls else None
+            try: price = float(s.product.pricing.selling_price or 0)
+            except: price = 0
+            dead_stock_items.append({
+                "product": s.product.name,
+                "section": s.product.category.section.name if s.product.category.section else "—",
+                "category": s.product.category.name,
+                "size": s.size, "quantity": s.quantity,
+                "last_sold": str(ls) if ls else None, "days": days,
+                "at_risk": round(price * s.quantity, 2),
+                "truly_dead": days is None or days >= DEAD_STOCK_DAYS,
+            })
+
+        # ── Aging ────────────────────────────────────────────────
+        def _ago(n): return today - timedelta(days=n)
+        prod_qs = Product.objects.all()
+        if section_id != "all":
+            prod_qs = prod_qs.filter(category__section_id=section_id)
+        aging = {
+            "fresh":  prod_qs.filter(buy_date__gte=_ago(30)).count(),
+            "normal": prod_qs.filter(buy_date__range=[_ago(60), _ago(31)]).count(),
+            "warn":   prod_qs.filter(buy_date__range=[_ago(90), _ago(61)]).count(),
+            "dead":   prod_qs.filter(buy_date__lt=_ago(90)).count(),
+        }
+
+        # ── Margin by Category ───────────────────────────────────
+        margin_qs = (base_qs.values("product__category__name","product__category__section__name")
+                     .annotate(total_revenue=Sum("selling_price"), total_profit=Sum("profit"))
+                     .filter(total_revenue__gt=0).order_by("-total_profit"))
+        margin_labels, margin_data, margin_revenue, margin_profit_list = [], [], [], []
+        for m in margin_qs:
+            if m["total_revenue"] and m["total_revenue"] > 0:
+                pct = round(float(m["total_profit"] or 0) / float(m["total_revenue"]) * 100, 1)
+                margin_labels.append(f"{m['product__category__section__name']} - {m['product__category__name']}")
+                margin_data.append(pct)
+                margin_revenue.append(float(m["total_revenue"] or 0))
+                margin_profit_list.append(float(m["total_profit"] or 0))
+
+        return JsonResponse({
+            "range_label":   range_label,
+            "section_label": section_label,
+            "active_range":  date_range,
+            "active_section": section_id,
+            # KPIs
+            "total_revenue_today":  total_revenue_today,
+            "total_profit_today":   total_profit_today,
+            "total_units_today":    total_units_today,
+            "total_revenue_period": total_revenue_period,
+            "total_profit_period":  total_profit_period,
+            "total_units_period":   total_units_period,
+            "margin_pct":           margin_pct,
+            # Charts
+            "monthly_labels":  monthly_labels,
+            "monthly_revenue": monthly_revenue,
+            "monthly_profit":  monthly_profit,
+            "growth_data":     growth_data,
+            "weekly_labels":   weekly_labels,
+            "weekly_revenue":  weekly_revenue,
+            "weekly_profit":   weekly_profit,
+            "cat_labels":      cat_labels,
+            "cat_data":        cat_data,
+            # Tables
+            "top_products":     top_products,
+            "low_stock_items":  low_stock_items,
+            "dead_stock_items": dead_stock_items,
+            "low_stock_count":  len(low_stock_items),
+            "dead_stock_count": len(dead_stock_items),
+            "alert_count":      len(low_stock_items) + len(dead_stock_items),
+            "aging":            aging,
+            # Margin chart
+            "margin_labels":  margin_labels,
+            "margin_data":    margin_data,
+            "margin_revenue": margin_revenue,
+            "margin_profit":  margin_profit_list,
+        })
+
+    def product_sizes_api(self, request):
+        """Returns available sizes + pricing for a product — used by Sale form JS"""
+        from django.http import JsonResponse
+        from decimal import Decimal
+
+        product_id = request.GET.get('product_id')
+        size_filter = request.GET.get('size')
+
+        if not product_id:
+            return JsonResponse({'sizes': []})
+
+        try:
+            pricings = Pricing.objects.filter(
+                product_id=product_id
+            ).order_by('size', 'marked_price')
+
+            if size_filter:
+                pricings = pricings.filter(size=size_filter)
+
+            sizes = []
+            for p in pricings:
+                min_selling = round(float(p.purchase_rate) * 1.20, 2)
+                sizes.append({
+                    'size':          p.size,
+                    'purchase_rate': str(p.purchase_rate),
+                    'marked_price':  str(p.marked_price or ''),
+                    'min_selling':   str(min_selling),
+                    'pricing_id':    p.id,
+                })
+
+            return JsonResponse({'sizes': sizes})
+        except Exception as e:
+            return JsonResponse({'sizes': [], 'error': str(e)})
+
     def stock_alerts_api(self, request):
         import json as _json
         from datetime import timedelta as _td
@@ -358,7 +633,7 @@ class MyAdminSite(admin.AdminSite):
                 else: low.append(item)
         dead_cutoff = today - timedelta(days=DEAD_STOCK_DAYS)
         sold_ids = Sale.objects.filter(sold_date__gte=dead_cutoff).values_list("product_id", flat=True)
-        for s in Stock.objects.filter(quantity__gt=0).exclude(product_id__in=sold_ids).select_related("product","product__category","product__pricing").annotate(last_sold=Max("product__sale__sold_date")).order_by(F("last_sold").asc(nulls_first=True))[:15]:
+        for s in Stock.objects.filter(quantity__gt=0).exclude(product_id__in=sold_ids).select_related("product","product__category").annotate(last_sold=Max("product__sale__sold_date")).order_by(F("last_sold").asc(nulls_first=True))[:15]:
             ls = s.last_sold.date() if s.last_sold else None
             days = (today - ls).days if ls else None
             try: price = float(s.product.pricing.selling_price or 0)
@@ -379,7 +654,7 @@ class MyAdminSite(admin.AdminSite):
         # ── Date range from GET params ────────────────────────────
         date_range = request.GET.get("range", "year")
         if date_range == "today":
-            sales_filter = Q(sold_date__date=today)
+            sales_filter = Q(sold_date=today)
             period_label = f"Today ({today})"
         elif date_range == "month":
             sales_filter = Q(sold_date__year=year, sold_date__month=today.month)
@@ -487,8 +762,8 @@ class MyAdminSite(admin.AdminSite):
         total_prof  = Sale.objects.filter(sales_filter).aggregate(t=Sum("profit"))["t"] or 0
         total_units = Sale.objects.filter(sales_filter).aggregate(t=Sum("quantity"))["t"] or 0
         total_orders= Sale.objects.filter(sales_filter).count()
-        today_rev   = Sale.objects.filter(sold_date__date=today).aggregate(t=Sum("selling_price"))["t"] or 0
-        today_prof  = Sale.objects.filter(sold_date__date=today).aggregate(t=Sum("profit"))["t"] or 0
+        today_rev   = Sale.objects.filter(sold_date=today).aggregate(t=Sum("selling_price"))["t"] or 0
+        today_prof  = Sale.objects.filter(sold_date=today).aggregate(t=Sum("profit"))["t"] or 0
         low_count   = sum(1 for s in Stock.objects.select_related("product") if s.quantity <= s.product.low_stock_threshold)
         margin_pct  = round(float(total_prof)/float(total_rev)*100,1) if total_rev else 0
         avg_order   = round(float(total_rev)/total_orders,2) if total_orders else 0
@@ -677,7 +952,7 @@ class MyAdminSite(admin.AdminSite):
         sold_ids    = Sale.objects.filter(sold_date__gte=dead_cutoff).values_list("product_id", flat=True)
         for stk in (
             Stock.objects.filter(quantity__gt=0).exclude(product_id__in=sold_ids)
-            .select_related("product","product__category","product__category__section","product__pricing")
+            .select_related("product","product__category","product__category__section")
             .annotate(last_sold=Max("product__sale__sold_date"))
             .order_by(F("last_sold").asc(nulls_first=True))
         ):
@@ -726,6 +1001,12 @@ class StockInline(admin.TabularInline):
     verbose_name        = "Size & Stock"
     verbose_name_plural = "Sizes & Stock"
 
+    def get_extra(self, request, obj=None, **kwargs):
+        # Don't show extra empty rows if stock already exists
+        if obj and obj.stock_set.exists():
+            return 0
+        return 1
+
 
 class PricingInline(admin.TabularInline):
     model   = Pricing
@@ -736,6 +1017,12 @@ class PricingInline(admin.TabularInline):
     fields  = ("size", "purchase_rate", "marked_price")
     verbose_name        = "Size Pricing"
     verbose_name_plural = "Size-based Pricing (add one row per size)"
+
+    def get_extra(self, request, obj=None, **kwargs):
+        # Don't show extra empty rows if pricing already exists
+        if obj and obj.pricings.exists():
+            return 0
+        return 1
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -813,6 +1100,88 @@ class ProductAdmin(AuditLogMixin, admin.ModelAdmin):
             "category", "category__section"
         ).prefetch_related("stock_set")
 
+    def save_formset(self, request, form, formset, change):
+        """✅ Fix 3: Expand size ranges when saving Stock and Pricing inlines"""
+        from .models import expand_size_range
+        instances = formset.save(commit=False)
+
+        for instance in instances:
+            if isinstance(instance, Stock):
+                sizes = expand_size_range(instance.size)
+                if len(sizes) > 1:
+                    # It's a range — create individual stock entries
+                    for sz in sizes:
+                        existing = Stock.objects.filter(
+                            product=instance.product, size=sz
+                        ).first()
+                        if existing:
+                            existing.quantity += instance.quantity
+                            existing.save()
+                        else:
+                            Stock.objects.create(
+                                product=instance.product,
+                                size=sz,
+                                quantity=instance.quantity
+                            )
+                    # Don't save the range entry itself
+                    continue
+                else:
+                    # Normal size — save as usual
+                    existing = Stock.objects.filter(
+                        product=instance.product, size=instance.size
+                    ).exclude(pk=instance.pk if instance.pk else None).first()
+                    if existing:
+                        existing.quantity += instance.quantity
+                        existing.save()
+                        continue
+
+            elif isinstance(instance, Pricing):
+                sizes = expand_size_range(instance.size)
+                if len(sizes) > 1:
+                    # Range pricing — create one pricing per size
+                    for sz in sizes:
+                        Pricing.objects.create(
+                            product=instance.product,
+                            size=sz,
+                            purchase_rate=instance.purchase_rate,
+                            marked_price=instance.marked_price
+                        )
+                    continue
+
+            instance.save()
+
+        formset.save_m2m()
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        return form
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        # ✅ Fix 2: On POST, check for duplicate and redirect to existing
+        if request.method == 'POST' and not object_id:
+            name     = request.POST.get('name', '').strip()
+            category = request.POST.get('category')
+            if name and category:
+                existing = Product.objects.filter(
+                    name=name, category_id=category
+                ).first()
+                if existing:
+                    from django.contrib import messages
+                    from django.http import HttpResponseRedirect
+                    from django.urls import reverse
+                    messages.warning(
+                        request,
+                        f'⚠️ "{name}" already exists in this category. '
+                        f'You have been redirected to the existing product — '
+                        f'add new sizes/prices here.'
+                    )
+                    url = reverse('my_admin:store_product_change',
+                                  args=[existing.id])
+                    return HttpResponseRedirect(url)
+        return super().changeform_view(
+            request, object_id, form_url, extra_context
+        )
+
 
 @admin.register(Pricing, site=my_admin)
 class PricingAdmin(AuditLogMixin, admin.ModelAdmin):
@@ -865,12 +1234,55 @@ class StockAdmin(AuditLogMixin, admin.ModelAdmin):
 
 @admin.register(Sale, site=my_admin)
 class SaleAdmin(AuditLogMixin, admin.ModelAdmin):
-    list_display    = ("product", "size", "quantity", "selling_price_display",
-                       "profit_display", "margin_live", "sold_date")
-    list_filter     = ("sold_date", "product__category__section", "product__category")
-    search_fields   = ("product__name",)
-    readonly_fields = ("profit", "sold_date", "purchase_rate_snapshot", "marked_price_snapshot")
+    list_display = ("product", "size", "quantity", "selling_price_display",
+                    "profit_display", "margin_live", "payment_badge", "sold_date")
+    list_filter = (
+        ("sold_date", DateFieldListFilter),
+        "product__category__section",
+        "product__category",
+    )
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['cart_url'] = '/admin/store/sale/add-cart/'
+        return super().changelist_view(request, extra_context=extra_context)
+
+    readonly_fields = ("profit", "purchase_rate_snapshot", "marked_price_snapshot")
     date_hierarchy  = "sold_date"
+
+    fields = (
+        ("product", "size"),
+        ("quantity", "selling_price", "discount"),
+        ("payment_mode",),
+        ("customer_name", "customer_phone"),
+        ("sold_date",),
+        ("pricing_id",),
+        ("profit", "purchase_rate_snapshot", "marked_price_snapshot"),
+    )
+
+    @admin.display(description="Payment")
+    def payment_badge(self, obj):
+        colors = {
+            'cash':     '#00ff88',
+            'phonepay': '#007bff',
+            'due':      '#ff3b5c',
+        }
+        labels = {
+            'cash':     '💵 Cash',
+            'phonepay': '📱 PhonePe',
+            'due':      '⏳ Due',
+        }
+        color = colors.get(obj.payment_mode, '#aaa')
+        label = labels.get(obj.payment_mode, obj.payment_mode)
+        return format_html(
+            '<span style="padding:3px 10px;border-radius:20px;'
+            'font-size:11px;font-weight:600;background:{};color:#000">{}</span>',
+            color, label
+        )
+
+    # ✅ Fix 2: Dynamic size choices based on selected product
+    class Media:
+        js = ('admin/js/sale_size_selector.js',)
 
     @admin.display(description="Selling Price", ordering="selling_price")
     def selling_price_display(self, obj):
@@ -895,6 +1307,113 @@ class SaleAdmin(AuditLogMixin, admin.ModelAdmin):
             )
         except Exception:
             return "—"
+
+    @admin.display(description="Payment")
+    def payment_badge(self, obj):
+        colors = {
+            'cash':     '#00ff88',
+            'phonepay': '#007bff',
+            'due':      '#ff3b5c',
+        }
+        labels = {
+            'cash':     '💵 Cash',
+            'phonepay': '📱 PhonePe',
+            'due':      '⏳ Due',
+        }
+        color = colors.get(obj.payment_mode, '#aaa')
+        label = labels.get(obj.payment_mode, obj.payment_mode)
+        return format_html(
+            '<span style="padding:3px 10px;border-radius:20px;'
+            'font-size:11px;font-weight:600;background:{};color:#000">{}</span>',
+            color, label
+        )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if 'pricing_id' in form.base_fields:
+            form.base_fields['pricing_id'].widget.attrs['style'] = 'display:none'
+            form.base_fields['pricing_id'].label = ''
+            form.base_fields['pricing_id'].required = False
+        return form
+
+    def get_urls(self):
+        from django.urls import path
+        custom = [
+            path("add-cart/",      self.admin_site.admin_view(self.cart_view),     name="store_sale_cart"),
+            path("add-cart/save/", self.admin_site.admin_view(self.cart_save_api), name="store_sale_cart_save"),
+        ]
+        return custom + super().get_urls()
+    
+    def cart_view(self, request):
+        products = Product.objects.all().order_by("name")
+        import json as _json
+        products_json = _json.dumps([{"id": p.id, "name": p.name} for p in products])
+        context = dict(
+            self.admin_site.each_context(request),
+            title="Add Sale — Cart",
+            products=products,
+            products_json=products_json,
+            opts=self.model._meta,
+        )
+        return TemplateResponse(request, "admin/store/sale/cart.html", context)
+
+    def cart_save_api(self, request):
+        from django.http import JsonResponse
+        import json as _json
+
+        if request.method != "POST":
+            return JsonResponse({"error": "POST required"}, status=405)
+
+        try:
+            data = _json.loads(request.body)
+        except Exception:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+        items          = data.get("items", [])
+        payment_mode   = data.get("payment_mode", "cash")
+        customer_name  = data.get("customer_name", "").strip()
+        customer_phone = data.get("customer_phone", "").strip()
+        sold_date_str  = data.get("sold_date", "")
+
+        if not items:
+            return JsonResponse({"error": "No items in cart"}, status=400)
+
+        if payment_mode == "due" and (not customer_name or not customer_phone):
+            return JsonResponse({"error": "Customer name and phone required for Due sales"}, status=400)
+
+        saved  = []
+        errors = []
+
+        for item in items:
+            try:
+                from datetime import date as _date
+                sale = Sale(
+                    product_id    = item.get("product_id"),
+                    size          = item.get("size"),
+                    quantity      = int(item.get("quantity", 1)),
+                    selling_price = Decimal(str(item.get("selling_price", 0))),
+                    discount      = Decimal(str(item.get("discount", 0))),
+                    payment_mode  = payment_mode,
+                    customer_name  = customer_name if payment_mode == "due" else "",
+                    customer_phone = customer_phone if payment_mode == "due" else "",
+                    pricing_id    = item.get("pricing_id"),
+                )
+                if sold_date_str:
+                    sale.sold_date = _date.fromisoformat(sold_date_str)
+                sale.full_clean()
+                sale.save()
+                saved.append(str(sale))
+            except Exception as e:
+                errors.append({"item": item.get("product_id"), "error": str(e)})
+
+        if errors and not saved:
+            return JsonResponse({"error": errors[0]["error"], "all_errors": errors}, status=400)
+
+        return JsonResponse({
+            "saved": len(saved),
+            "errors": errors,
+            "message": f"{len(saved)} sale(s) saved successfully!"
+        })
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related(

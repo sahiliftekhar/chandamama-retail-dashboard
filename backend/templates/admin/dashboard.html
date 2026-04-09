@@ -9,210 +9,198 @@
 
 {% block extrastyle %}
 {{ block.super }}
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
-  --bg-void:#f0f4f8; --bg-surface:#fff; --bg-card:#fff; --bg-raised:#f1f5f9;
-  --border:#e2e8f0; --border-hi:#94a3b8;
-  --cyan:#00d4ff; --green:#00c97a; --orange:#ff6b35; --red:#ff3b5c;
-  --purple:#a855f7; --gold:#d97706;
-  --t1:#0f172a; --t2:#334155; --t3:#94a3b8;
+  --bg-void:#0a0e1a; --bg-surface:#0d1424; --bg-card:#111827; --bg-raised:#1a2235; --bg-card2:#131c2e;
+  --border:#1e2d45; --border-hi:#2a4a6b;
+  --cyan:#00d4ff; --green:#00ff88; --orange:#ff6b35; --red:#ff3b5c; --purple:#a855f7; --gold:#fbbf24;
+  --t1:#e8edf5; --t2:#8ba3be; --t3:#3d5a73;
 }
-[data-theme="dark"] {
-  --bg-void:#080c10; --bg-surface:#0d1117; --bg-card:#111820; --bg-raised:#161d28;
-  --border:#1e2d3d; --border-hi:#2a4a6b;
-  --green:#00ff88; --gold:#fbbf24; --t1:#e2eaf4; --t2:#7a9bb5; --t3:#3d5a73;
+[data-theme="light"] {
+  --bg-void:#0a0e1a; --bg-surface:#0d1424; --bg-card:#111827; --bg-raised:#1a2235; --bg-card2:#131c2e;
+  --border:#1e2d45; --border-hi:#2a4a6b;
+  --green:#00ff88; --gold:#fbbf24; --t1:#e8edf5; --t2:#8ba3be; --t3:#3d5a73;
 }
 .theme-toggle{display:none!important}
 #content{padding:0!important;background:var(--bg-void)!important}
 #content-main{padding:0!important}
 #header{background:var(--bg-surface)!important;border-bottom:1px solid var(--border)!important}
-
-.rid-wrap{min-height:100vh;background:var(--bg-void);font-family:'Syne',sans-serif;color:var(--t1);transition:background .3s,color .3s}
-
-/* ── Topbar ── */
-.rid-topbar{position:sticky;top:0;z-index:200;background:var(--bg-surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;transition:background .3s}
-.rid-topbar h1{font-size:18px;font-weight:800;letter-spacing:-.4px;color:var(--t1)}
-.rid-topbar p{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);margin-top:2px}
-.live-clock{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);font-weight:600;padding:5px 12px;border:1px solid rgba(0,212,255,0.3);border-radius:6px;background:rgba(0,212,255,0.05);letter-spacing:0.5px;white-space:nowrap;}
+body{background:var(--bg-void)!important}
+.rid-wrap{min-height:100vh;background:var(--bg-void);font-family:'Inter',sans-serif;color:var(--t1)}
+.rid-topbar{position:sticky;top:0;z-index:200;background:rgba(13,20,36,0.97);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+.rid-topbar p{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);margin-top:2px;letter-spacing:1px}
+.live-clock{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);font-weight:600;padding:6px 14px;border:1px solid rgba(0,212,255,0.25);border-radius:8px;background:rgba(0,212,255,0.06);letter-spacing:.5px;white-space:nowrap}
 .topbar-right{display:flex;align-items:center;gap:10px}
-.tbadge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 10px;border-radius:4px;border:1px solid;letter-spacing:1px}
-.tbadge-live{color:var(--green);border-color:var(--green);background:rgba(0,201,122,0.05)}
-.tbadge-alert{color:var(--orange);border-color:var(--orange);background:rgba(255,107,53,0.07)}
-.exp-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;padding:8px 16px;border:1px solid var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.08);border-radius:6px;cursor:pointer;text-decoration:none;transition:all .2s;display:inline-block}
-.exp-btn:hover{background:rgba(0,212,255,0.18);transform:translateY(-1px);color:var(--cyan)}
-.theme-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;padding:8px 16px;border:1px solid var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.08);border-radius:6px;cursor:pointer;transition:all .2s}
-.theme-btn:hover{background:rgba(0,212,255,0.18)}
-
-/* ── Filter Bar ── */
-.filter-bar{background:var(--bg-surface);border-bottom:1px solid var(--border);padding:12px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.filter-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;margin-right:4px}
-.filter-btn{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;padding:6px 14px;border-radius:6px;border:1px solid var(--border);color:var(--t2);background:var(--bg-card);cursor:pointer;text-decoration:none;transition:all .2s;display:inline-block}
-.filter-btn:hover{border-color:var(--cyan);color:var(--cyan)}
-.filter-btn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.1);font-weight:700}
-.filter-divider{width:1px;height:24px;background:var(--border);margin:0 6px}
+.tbadge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:5px 11px;border-radius:6px;border:1px solid;letter-spacing:1px;font-weight:600}
+.tbadge-live{color:var(--green);border-color:rgba(0,255,136,0.4);background:rgba(0,255,136,0.08)}
+.tbadge-alert{color:var(--orange);border-color:rgba(255,107,53,0.4);background:rgba(255,107,53,0.08)}
+.exp-btn{font-family:'Inter',sans-serif;font-size:12px;font-weight:700;padding:8px 18px;border:1px solid rgba(0,212,255,0.35);color:var(--cyan);background:rgba(0,212,255,0.08);border-radius:8px;cursor:pointer;text-decoration:none;transition:all .2s;display:inline-block}
+.exp-btn:hover{background:rgba(0,212,255,0.16);box-shadow:0 0 16px rgba(0,212,255,0.2);color:var(--cyan)}
+.theme-btn{font-family:'Inter',sans-serif;font-size:12px;font-weight:700;padding:8px 18px;border:1px solid rgba(0,212,255,0.35);color:var(--cyan);background:rgba(0,212,255,0.08);border-radius:8px;cursor:pointer;transition:all .2s}
+.theme-btn:hover{background:rgba(0,212,255,0.16)}
+.filter-bar{background:rgba(13,20,36,0.9);border-bottom:1px solid var(--border);padding:10px 28px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filter-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);letter-spacing:2px;margin-right:2px;text-transform:uppercase}
+.filter-btn{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;padding:5px 14px;border-radius:6px;border:1px solid var(--border);color:var(--t2);background:var(--bg-raised);cursor:pointer;text-decoration:none;transition:all .2s;display:inline-block}
+.filter-btn:hover{border-color:rgba(0,212,255,0.4);color:var(--cyan);background:rgba(0,212,255,0.06)}
+.filter-btn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.12);font-weight:700;box-shadow:0 0 8px rgba(0,212,255,0.15)}
+.filter-divider{width:1px;height:22px;background:var(--border);margin:0 4px}
 .search-wrap{display:flex;align-items:center;gap:8px;margin-left:auto}
-.search-input{font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--t1);outline:none;width:200px;transition:border-color .2s}
-.search-input:focus{border-color:var(--cyan)}
-.search-btn{font-size:12px;padding:6px 12px;border:1px solid var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.08);border-radius:6px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700}
-
-/* ── Content ── */
+.search-input{font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-raised);color:var(--t1);outline:none;width:200px;transition:all .2s}
+.search-input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,255,0.08)}
+.search-input::placeholder{color:var(--t3)}
+.search-btn{font-size:12px;padding:6px 14px;border:1px solid var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.1);border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:700;transition:all .2s}
+.search-btn:hover{background:rgba(0,212,255,0.2);box-shadow:0 0 10px rgba(0,212,255,0.2)}
+.loading-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center}
+.loading-overlay.show{display:flex}
+.loading-spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.date-picker-btn{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;border:1px solid var(--border);color:var(--t2);background:var(--bg-raised);cursor:pointer;transition:all .2s;width:auto}
+.date-picker-btn:hover{border-color:rgba(0,212,255,0.4);color:var(--cyan)}
+.date-picker-btn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.12);box-shadow:0 0 8px rgba(0,212,255,0.15)}
+.date-picker-btn::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) saturate(5) hue-rotate(175deg);cursor:pointer}
 .rid-content{position:relative;padding:24px 28px}
-
-/* ── Period KPI bar ── */
-.period-bar{background:linear-gradient(135deg,rgba(0,212,255,0.08),rgba(168,85,247,0.06));border:1px solid var(--border);border-radius:10px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:32px}
-.period-item{text-align:center}
-.period-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;margin-bottom:4px}
-.period-val{font-size:18px;font-weight:800;color:var(--cyan)}
-.period-val.green{color:var(--green)}
-.period-tag{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);margin-left:auto;padding:4px 10px;border:1px solid var(--border);border-radius:4px}
-
-/* ── KPI Row ── */
-.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
-.kpi{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:18px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s;box-shadow:0 1px 3px rgba(0,0,0,0.06);animation:fadeUp .4s ease both}
-.kpi:hover{border-color:var(--border-hi);transform:translateY(-2px)}
+.period-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.period-card{background:var(--bg-card2);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;animation:fadeUp .4s ease both}
+.period-card:hover{transform:translateY(-3px)}
+.period-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.period-card.c-cyan{border-color:rgba(0,212,255,0.25);box-shadow:0 0 20px rgba(0,212,255,0.06),inset 0 1px 0 rgba(0,212,255,0.1)}
+.period-card.c-cyan:hover{box-shadow:0 8px 32px rgba(0,212,255,0.15)}
+.period-card.c-green{border-color:rgba(0,255,136,0.25);box-shadow:0 0 20px rgba(0,255,136,0.06),inset 0 1px 0 rgba(0,255,136,0.1)}
+.period-card.c-green:hover{box-shadow:0 8px 32px rgba(0,255,136,0.15)}
+.period-card.c-purple{border-color:rgba(168,85,247,0.25);box-shadow:0 0 20px rgba(168,85,247,0.06),inset 0 1px 0 rgba(168,85,247,0.1)}
+.period-card.c-purple:hover{box-shadow:0 8px 32px rgba(168,85,247,0.15)}
+.period-card.c-gold{border-color:rgba(251,191,36,0.25);box-shadow:0 0 20px rgba(251,191,36,0.06),inset 0 1px 0 rgba(251,191,36,0.1)}
+.period-card.c-gold:hover{box-shadow:0 8px 32px rgba(251,191,36,0.15)}
+.period-card.c-cyan::before{background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+.period-card.c-green::before{background:linear-gradient(90deg,transparent,var(--green),transparent)}
+.period-card.c-purple::before{background:linear-gradient(90deg,transparent,var(--purple),transparent)}
+.period-card.c-gold::before{background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.pc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.pc-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);font-weight:600}
+.pc-ico{font-size:16px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px}
+.period-card.c-cyan .pc-ico{background:rgba(0,212,255,0.1)}.period-card.c-green .pc-ico{background:rgba(0,255,136,0.1)}
+.period-card.c-purple .pc-ico{background:rgba(168,85,247,0.1)}.period-card.c-gold .pc-ico{background:rgba(251,191,36,0.1)}
+.pc-val{font-size:32px;font-weight:800;letter-spacing:-1.5px;line-height:1;margin-bottom:10px;font-family:'Inter',sans-serif}
+.period-card.c-cyan .pc-val{color:var(--cyan)}.period-card.c-green .pc-val{color:var(--green)}
+.period-card.c-purple .pc-val{color:var(--purple)}.period-card.c-gold .pc-val{color:var(--gold)}
+.pc-tag{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);padding:3px 8px;border:1px solid var(--border);border-radius:20px;display:inline-block}
+.trend-badge{display:inline-flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;margin-bottom:8px}
+.trend-up{background:rgba(0,255,136,0.12);color:var(--green);border:1px solid rgba(0,255,136,0.25)}
+.trend-down{background:rgba(255,59,92,0.12);color:var(--red);border:1px solid rgba(255,59,92,0.25)}
+.trend-flat{background:rgba(148,163,184,0.1);color:var(--t3);border:1px solid var(--border)}
+@media(max-width:1024px){.period-cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.period-cards{grid-template-columns:1fr 1fr}}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--bg-card2);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;animation:fadeUp .4s ease both}
+.kpi:hover{transform:translateY(-2px)}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.c-cyan{border-color:rgba(0,212,255,0.2)}.kpi.c-cyan:hover{box-shadow:0 6px 24px rgba(0,212,255,0.12);border-color:rgba(0,212,255,0.4)}
+.kpi.c-green{border-color:rgba(0,255,136,0.2)}.kpi.c-green:hover{box-shadow:0 6px 24px rgba(0,255,136,0.12);border-color:rgba(0,255,136,0.4)}
+.kpi.c-orange{border-color:rgba(255,107,53,0.2)}.kpi.c-orange:hover{box-shadow:0 6px 24px rgba(255,107,53,0.12);border-color:rgba(255,107,53,0.4)}
+.kpi.c-purple{border-color:rgba(168,85,247,0.2)}.kpi.c-purple:hover{box-shadow:0 6px 24px rgba(168,85,247,0.12);border-color:rgba(168,85,247,0.4)}
+.kpi.c-red{border-color:rgba(255,59,92,0.2)}.kpi.c-red:hover{box-shadow:0 6px 24px rgba(255,59,92,0.12);border-color:rgba(255,59,92,0.4)}
 .kpi.c-cyan::before{background:var(--cyan)}.kpi.c-green::before{background:var(--green)}
 .kpi.c-orange::before{background:var(--orange)}.kpi.c-purple::before{background:var(--purple)}
-.kpi.c-gold::before{background:var(--gold)}
-.kpi-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:8px}
-.kpi-val{font-size:24px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:6px}
+.kpi.c-red::before{background:var(--red)}
+.kpi-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:8px;font-weight:600}
+.kpi-val{font-size:24px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:5px;font-family:'Inter',sans-serif}
 .kpi.c-cyan .kpi-val{color:var(--cyan)}.kpi.c-green .kpi-val{color:var(--green)}
 .kpi.c-orange .kpi-val{color:var(--orange)}.kpi.c-purple .kpi-val{color:var(--purple)}
-.kpi.c-gold .kpi-val{color:var(--gold)}
+.kpi.c-red .kpi-val{color:var(--red)}
 .kpi-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3)}
-.kpi-ico{position:absolute;right:14px;top:14px;font-size:20px;opacity:.12}
-
-/* ── Grids ── */
-.g2-1{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px}
-.g1-1{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
-.g-full{margin-bottom:18px}
-
-/* ── Panel ── */
-.panel{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:background .3s,border-color .3s;box-shadow:0 1px 3px rgba(0,0,0,0.06);animation:fadeUp .5s ease both}
-.ph{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.ph-title{font-size:13px;font-weight:700;color:var(--t1)}
-.ph-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3)}
+.kpi-ico{position:absolute;right:12px;top:12px;font-size:18px;opacity:.15}
+.insights-box{background:linear-gradient(135deg,rgba(0,212,255,0.05) 0%,rgba(168,85,247,0.05) 50%,rgba(0,255,136,0.03) 100%);border:1px solid rgba(0,212,255,0.2);border-radius:14px;padding:18px 22px;margin-bottom:16px;animation:fadeUp .4s ease both;box-shadow:0 0 40px rgba(0,212,255,0.06),inset 0 1px 0 rgba(255,255,255,0.04)}
+.insights-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.insights-header{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--cyan);text-transform:uppercase;font-weight:700;display:flex;align-items:center;gap:8px}
+.insights-header-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(0.85)}}
+.insights-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.insight-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;border:1px solid;transition:transform .2s,box-shadow .2s;cursor:default}
+.insight-item:hover{transform:translateY(-2px)}
+.insight-item.good{background:rgba(0,255,136,0.07);border-color:rgba(0,255,136,0.25);box-shadow:0 0 12px rgba(0,255,136,0.06)}
+.insight-item.good:hover{box-shadow:0 4px 20px rgba(0,255,136,0.15)}
+.insight-item.warn{background:rgba(255,107,53,0.07);border-color:rgba(255,107,53,0.25);box-shadow:0 0 12px rgba(255,107,53,0.06)}
+.insight-item.warn:hover{box-shadow:0 4px 20px rgba(255,107,53,0.15)}
+.insight-item.danger{background:rgba(255,59,92,0.07);border-color:rgba(255,59,92,0.25);box-shadow:0 0 12px rgba(255,59,92,0.06)}
+.insight-item.danger:hover{box-shadow:0 4px 20px rgba(255,59,92,0.15)}
+.insight-item:not(.good):not(.warn):not(.danger){background:rgba(0,212,255,0.06);border-color:rgba(0,212,255,0.2);box-shadow:0 0 12px rgba(0,212,255,0.04)}
+.insight-icon{font-size:20px;flex-shrink:0;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px}
+.insight-item.good .insight-icon{background:rgba(0,255,136,0.12)}
+.insight-item.warn .insight-icon{background:rgba(255,107,53,0.12)}
+.insight-item.danger .insight-icon{background:rgba(255,59,92,0.12)}
+.insight-item:not(.good):not(.warn):not(.danger) .insight-icon{background:rgba(0,212,255,0.1)}
+.insight-text{flex:1;min-width:0}
+.insight-label{font-size:12px;font-weight:600;line-height:1.3;font-family:'Inter',sans-serif}
+.insight-item.good .insight-label{color:#00ff88}
+.insight-item.warn .insight-label{color:var(--orange)}
+.insight-item.danger .insight-label{color:var(--red)}
+.insight-item:not(.good):not(.warn):not(.danger) .insight-label{color:var(--cyan)}
+.insights-btn{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;padding:8px 18px;border:1px solid rgba(0,212,255,0.4);color:var(--cyan);background:rgba(0,212,255,0.1);border-radius:8px;cursor:pointer;white-space:nowrap;text-decoration:none;transition:all .2s;flex-shrink:0;display:inline-flex;align-items:center;gap:6px}
+.insights-btn:hover{background:rgba(0,212,255,0.2);box-shadow:0 0 16px rgba(0,212,255,0.25);transform:translateY(-1px)}
+@media(max-width:768px){.insights-list{grid-template-columns:1fr 1fr}}
+.g2-1{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
+.g1-1{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.g-full{margin-bottom:16px}
+.panel{background:var(--bg-card2);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .2s,box-shadow .2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);animation:fadeUp .5s ease both}
+.panel:hover{border-color:rgba(0,212,255,0.18);box-shadow:0 4px 20px rgba(0,212,255,0.06)}
+.ph{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.01)}
+.ph-title{font-size:13px;font-weight:700;color:var(--t1);font-family:'Inter',sans-serif}
+.ph-meta{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);letter-spacing:1px}
 .pb{padding:18px}.pb canvas{max-height:230px}
-
-/* ── Table ── */
 .dtable{width:100%;border-collapse:collapse;font-size:12px}
-.dtable th{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
-.dtable td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--t2);transition:background .1s}
-.dtable tr:hover td{background:var(--bg-raised);color:var(--t1)}
+.dtable th{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02)}
+.dtable td{padding:11px 14px;border-bottom:1px solid rgba(30,45,69,0.6);color:var(--t2);transition:background .1s}
+.dtable tr:hover td{background:rgba(0,212,255,0.03);color:var(--t1)}
 .dtable tr:last-child td{border-bottom:none}
-.td-name{font-weight:700;color:var(--t1)!important}
-
-/* ── Pill ── */
-.pill{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;padding:3px 8px;border-radius:20px;display:inline-block;letter-spacing:1px}
-.p-green{background:rgba(0,201,122,0.1);color:var(--green);border:1px solid rgba(0,201,122,0.2)}
+.td-name{font-weight:700;color:var(--t1)!important;font-family:'Inter',sans-serif}
+.pill{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:3px 9px;border-radius:20px;display:inline-block;letter-spacing:1px}
+.p-green{background:rgba(0,255,136,0.1);color:var(--green);border:1px solid rgba(0,255,136,0.2)}
 .p-orange{background:rgba(255,107,53,0.1);color:var(--orange);border:1px solid rgba(255,107,53,0.2)}
 .p-red{background:rgba(255,59,92,0.1);color:var(--red);border:1px solid rgba(255,59,92,0.2)}
 .p-cyan{background:rgba(0,212,255,0.1);color:var(--cyan);border:1px solid rgba(0,212,255,0.2)}
-.p-gold{background:rgba(217,119,6,0.1);color:var(--gold);border:1px solid rgba(217,119,6,0.2)}
-
-/* ── Stock bar ── */
+.p-gold{background:rgba(251,191,36,0.1);color:var(--gold);border:1px solid rgba(251,191,36,0.2)}
 .sbar-wrap{display:flex;align-items:center;gap:8px}
-.sbar{flex:1;height:5px;background:var(--bg-raised);border-radius:3px;overflow:hidden}
+.sbar{flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
 .sbar-fill{height:100%;border-radius:3px}
-
-/* ── Aging ── */
 .aging-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.age-cell{padding:14px;border-radius:8px;text-align:center;border:1px solid transparent;transition:transform .15s}
+.age-cell{padding:14px;border-radius:10px;text-align:center;border:1px solid transparent;transition:transform .15s}
 .age-cell:hover{transform:scale(1.03)}
-.age-fresh{background:rgba(0,201,122,0.07);border-color:rgba(0,201,122,0.15)}
-.age-normal{background:rgba(0,212,255,0.06);border-color:rgba(0,212,255,0.12)}
-.age-warn{background:rgba(217,119,6,0.07);border-color:rgba(217,119,6,0.15)}
-.age-dead{background:rgba(255,59,92,0.07);border-color:rgba(255,59,92,0.15)}
+.age-fresh{background:rgba(0,255,136,0.06);border-color:rgba(0,255,136,0.15)}
+.age-normal{background:rgba(0,212,255,0.05);border-color:rgba(0,212,255,0.12)}
+.age-warn{background:rgba(251,191,36,0.06);border-color:rgba(251,191,36,0.15)}
+.age-dead{background:rgba(255,59,92,0.06);border-color:rgba(255,59,92,0.15)}
 .age-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--t3);margin-bottom:6px}
-.age-num{font-size:26px;font-weight:800;margin-bottom:2px}
+.age-num{font-size:26px;font-weight:800;margin-bottom:2px;font-family:'Inter',sans-serif}
 .age-sub{font-size:10px;color:var(--t2)}
 .age-fresh .age-num{color:var(--green)}.age-normal .age-num{color:var(--cyan)}
 .age-warn .age-num{color:var(--gold)}.age-dead .age-num{color:var(--red)}
-
-/* ── Dead row ── */
-.dead-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.dead-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid rgba(30,45,69,0.6)}
 .dead-row:last-child{border-bottom:none;padding-bottom:0}
 .dead-icon{font-size:16px;flex-shrink:0;margin-top:1px}
 .dead-body{flex:1}
-.dead-title{font-size:12.5px;font-weight:700;color:var(--t1);margin-bottom:3px}
+.dead-title{font-size:12.5px;font-weight:700;color:var(--t1);margin-bottom:3px;font-family:'Inter',sans-serif}
 .dead-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3)}
-
+.tab-panel{background:var(--bg-card2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;animation:fadeUp .5s ease both}
+.tab-header{display:flex;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02)}
+.tab-btn{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;padding:12px 20px;border:none;background:transparent;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;gap:7px}
+.tab-btn:hover{color:var(--t1);background:rgba(255,255,255,0.03)}
+.tab-btn.active{color:var(--cyan);border-bottom-color:var(--cyan);background:rgba(0,212,255,0.04)}
+.tab-badge{background:var(--bg-raised);border:1px solid var(--border);border-radius:20px;padding:1px 7px;font-size:9px;color:var(--t3)}
+.tab-btn.active .tab-badge{background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.3);color:var(--cyan)}
+.tab-content{display:none}.tab-content.active{display:block}
 .empty{text-align:center;padding:32px 20px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t3)}
-
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-.kpi:nth-child(1){animation-delay:.05s}.kpi:nth-child(2){animation-delay:.1s}
-.kpi:nth-child(3){animation-delay:.15s}.kpi:nth-child(4){animation-delay:.2s}
-.kpi:nth-child(5){animation-delay:.25s}
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:var(--bg-void)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.kpi:nth-child(1){animation-delay:.04s}.kpi:nth-child(2){animation-delay:.08s}
+.kpi:nth-child(3){animation-delay:.12s}.kpi:nth-child(4){animation-delay:.16s}.kpi:nth-child(5){animation-delay:.2s}
+@keyframes numPop{0%{transform:scale(1.1);opacity:.8}100%{transform:scale(1);opacity:1}}
+.num-updated{animation:numPop .3s ease}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg-void)}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-
-/* ── TABLET (max 1024px) ── */
-@media(max-width:1024px){
-  .kpi-row{grid-template-columns:repeat(3,1fr)}
-  .g2-1{grid-template-columns:1fr}
-  .g1-1{grid-template-columns:1fr}
-  .rid-content{padding:16px}
-  .rid-topbar{padding:12px 16px}
-  .filter-bar{padding:10px 16px}
-}
-
-/* ── MOBILE (max 768px) ── */
-@media(max-width:768px){
-  /* Topbar */
-  .rid-topbar{flex-direction:column;align-items:flex-start;gap:10px;padding:12px 16px}
-  .rid-topbar h1{font-size:15px}
-  .topbar-right{width:100%;flex-wrap:wrap;gap:8px}
-  .exp-btn,.theme-btn{flex:1;text-align:center;padding:7px 10px;font-size:11px}
-  .tbadge{font-size:9px;padding:3px 8px}
-
-  /* Filter bar */
-  .filter-bar{padding:10px 12px;gap:6px}
-  .filter-label{font-size:9px;width:100%}
-  .filter-btn{font-size:10px;padding:5px 10px}
-  .filter-divider{display:none}
-  .search-wrap{width:100%;margin-left:0;margin-top:4px}
-  .search-input{flex:1;width:100%}
-
-  /* Period bar */
-  .period-bar{flex-wrap:wrap;gap:16px;padding:12px}
-  .period-tag{width:100%;text-align:center}
-
-  /* KPI cards — 2 per row on mobile */
-  .kpi-row{grid-template-columns:repeat(2,1fr);gap:10px}
-  .kpi{padding:14px}
-  .kpi-val{font-size:20px}
-
-  /* Charts — all full width */
-  .g2-1,.g1-1{grid-template-columns:1fr}
-
-  /* Content padding */
-  .rid-content{padding:12px}
-
-  /* Tables — horizontal scroll */
-  .panel .pb{padding:0;overflow-x:auto}
-  .dtable{min-width:500px}
-  .dtable th,.dtable td{padding:8px 10px;font-size:11px}
-
-  /* Aging grid — 2 cols on mobile */
-  .aging-grid{grid-template-columns:repeat(2,1fr)}
-  .age-num{font-size:20px}
-
-  /* Dead stock rows */
-  .dead-meta{font-size:9px}
-}
-
-/* ── SMALL MOBILE (max 480px) ── */
-@media(max-width:480px){
-  .kpi-row{grid-template-columns:1fr 1fr}
-  .kpi-val{font-size:18px}
-  .rid-topbar h1{font-size:13px}
-  .aging-grid{grid-template-columns:repeat(2,1fr)}
-  .period-bar{gap:12px}
-  .period-val{font-size:15px}
-}
+@media(max-width:1024px){.kpi-row{grid-template-columns:repeat(3,1fr)}.g2-1{grid-template-columns:1fr}.g1-1{grid-template-columns:1fr}.rid-content{padding:16px}.rid-topbar{padding:12px 16px}.filter-bar{padding:10px 16px}}
+@media(max-width:768px){.rid-topbar{flex-direction:column;align-items:flex-start;gap:10px;padding:12px 16px}.topbar-right{width:100%;flex-wrap:wrap;gap:8px}.exp-btn,.theme-btn{flex:1;text-align:center;padding:7px 10px;font-size:11px}.filter-bar{padding:10px 12px;gap:6px}.search-wrap{width:100%;margin-left:0;margin-top:4px}.search-input{flex:1;width:100%}.kpi-row{grid-template-columns:repeat(2,1fr);gap:10px}.kpi{padding:14px}.kpi-val{font-size:20px}.g2-1,.g1-1{grid-template-columns:1fr}.rid-content{padding:12px}.dtable{min-width:500px}.aging-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.kpi-row{grid-template-columns:1fr 1fr}.kpi-val{font-size:18px}.period-cards{grid-template-columns:1fr 1fr}.pc-val{font-size:24px}}
 </style>
 
 <script>
@@ -225,29 +213,23 @@
 function updateClock() {
   var now = new Date();
   var ist = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
-
   var days   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
   var day   = days[ist.getDay()];
   var date  = String(ist.getDate()).padStart(2,'0');
   var month = months[ist.getMonth()];
   var year  = ist.getFullYear();
-
   var hrs   = ist.getHours();
   var mins  = String(ist.getMinutes()).padStart(2,'0');
   var secs  = String(ist.getSeconds()).padStart(2,'0');
   var ampm  = hrs >= 12 ? 'PM' : 'AM';
   hrs = hrs % 12 || 12;
   hrs = String(hrs).padStart(2,'0');
-
   var clock = document.getElementById('liveClock');
   if(clock) {
     clock.textContent = day + ', ' + date + ' ' + month + ' ' + year + '  ' + hrs + ':' + mins + ':' + secs + ' ' + ampm + ' IST';
   }
 }
-
-// Start clock immediately and update every second
 updateClock();
 setInterval(updateClock, 1000);
 </script>
@@ -255,6 +237,11 @@ setInterval(updateClock, 1000);
 
 {% block content %}
 <div class="rid-wrap">
+
+  <!-- Loading overlay with skeleton -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+  </div>
 
   <!-- ── TOPBAR ── -->
   <div class="rid-topbar">
@@ -265,7 +252,7 @@ setInterval(updateClock, 1000);
     <div class="topbar-right">
       <span class="tbadge tbadge-live">● LIVE</span>
       <span class="live-clock" id="liveClock">🕐 --:-- --</span>
-      {% if alert_count %}<span class="tbadge tbadge-alert">⚠ {{ alert_count }} ALERT{{ alert_count|pluralize }}</span>{% endif %}
+      {% if alert_count %}<span class="tbadge tbadge-alert" id="alertBadge">⚠ {{ alert_count }} ALERT{{ alert_count|pluralize }}</span>{% endif %}
       <button class="theme-btn" id="themeBtn" onclick="
         var h=document.documentElement,c=localStorage.getItem('eod_theme')||'light';
         if(c==='light'){h.setAttribute('data-theme','dark');this.textContent='🌙 Dark';localStorage.setItem('eod_theme','dark');}
@@ -278,67 +265,66 @@ setInterval(updateClock, 1000);
   <!-- ── FILTER BAR ── -->
   <div class="filter-bar">
     <span class="filter-label">📅 PERIOD:</span>
-    <a href="?range=today{% if active_section != 'all' %}&section={{ active_section }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
-       class="filter-btn {% if active_range == 'today' %}active{% endif %}">Today</a>
-    <a href="?range=week{% if active_section != 'all' %}&section={{ active_section }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
-       class="filter-btn {% if active_range == 'week' %}active{% endif %}">This Week</a>
-    <a href="?range=month{% if active_section != 'all' %}&section={{ active_section }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
-       class="filter-btn {% if active_range == 'month' %}active{% endif %}">This Month</a>
-    <a href="?range=year{% if active_section != 'all' %}&section={{ active_section }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
-       class="filter-btn {% if active_range == 'year' %}active{% endif %}">This Year</a>
-    <a href="?range=all{% if active_section != 'all' %}&section={{ active_section }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
-       class="filter-btn {% if active_range == 'all' %}active{% endif %}">All Time</a>
+    <button class="filter-btn period-btn {% if active_range == 'today' %}active{% endif %}" data-range="today">Today</button>
+    <button class="filter-btn period-btn {% if active_range == 'week' %}active{% endif %}" data-range="week">This Week</button>
+    <button class="filter-btn period-btn {% if active_range == 'month' %}active{% endif %}" data-range="month">This Month</button>
+    <button class="filter-btn period-btn {% if active_range == 'year' %}active{% endif %}" data-range="year">This Year</button>
+    <button class="filter-btn period-btn {% if active_range == 'all' %}active{% endif %}" data-range="all">All Time</button>
+
+    <!-- ✅ Custom Date Picker -->
+    <input type="date" id="datePicker"
+      value="{{ active_from_date|default:'' }}"
+      class="date-picker-btn {% if active_range == 'custom' %}active{% endif %}"
+      title="Select Date Range">
 
     <div class="filter-divider"></div>
 
     <span class="filter-label">🏷️ SECTION:</span>
-    <a href="?range={{ active_range }}&section=all{% if search_query %}&q={{ search_query }}{% endif %}"
-       class="filter-btn {% if active_section == 'all' %}active{% endif %}">All</a>
+    <button class="filter-btn section-btn {% if active_section == 'all' %}active{% endif %}" data-section="all">All</button>
     {% for sec in all_sections %}
-    <a href="?range={{ active_range }}&section={{ sec.pk }}{% if search_query %}&q={{ search_query }}{% endif %}"
-       class="filter-btn {% if active_section == sec.pk|stringformat:'s' %}active{% endif %}">{{ sec.name }}</a>
+    <button class="filter-btn section-btn {% if active_section == sec.pk|stringformat:'s' %}active{% endif %}" data-section="{{ sec.pk }}">{{ sec.name }}</button>
     {% endfor %}
 
     <div class="search-wrap">
-      <form method="get" style="display:flex;gap:6px">
-        <input type="hidden" name="range" value="{{ active_range }}">
-        {% if active_section != 'all' %}<input type="hidden" name="section" value="{{ active_section }}">{% endif %}
-        <input class="search-input" type="text" name="q" placeholder="🔍 Search products..."
+      <div style="display:flex;gap:6px">
+        <input class="search-input" type="text" id="searchInput" placeholder="🔍 Search products..."
                value="{{ search_query }}">
-        <button class="search-btn" type="submit">Search</button>
+        <button class="search-btn" id="searchBtn">Search</button>
         {% if search_query %}
-        <a href="?range={{ active_range }}{% if active_section != 'all' %}&section={{ active_section }}{% endif %}"
-           class="search-btn" style="text-decoration:none;color:var(--red);border-color:var(--red);background:rgba(255,59,92,0.08)">✕</a>
+        <button class="search-btn" id="clearSearchBtn" style="color:var(--red);border-color:var(--red);background:rgba(255,59,92,0.08)">✕</button>
         {% endif %}
-      </form>
+      </div>
     </div>
   </div>
 
   <div class="rid-content">
 
-    <!-- ── PERIOD SUMMARY BAR ── -->
-    <div class="period-bar">
-      <div class="period-item">
-        <div class="period-lbl">Period Revenue</div>
-        <div class="period-val">₹{{ total_revenue_period|floatformat:0 }}</div>
+    <!-- ── PERIOD KPI CARDS ── -->
+    <div class="period-cards">
+      <div class="period-card c-cyan">
+        <div class="pc-top"><span class="pc-lbl">Period Revenue</span><span class="pc-ico">💰</span></div>
+        <div class="pc-val" id="periodRevenue">₹{{ total_revenue_period|floatformat:0 }}</div>
+        <div><span class="trend-badge trend-flat" id="periodTrend">● Stable</span></div>
+        <span class="pc-tag" id="periodTag">{{ range_label }} · {{ section_label }}</span>
       </div>
-      <div class="period-item">
-        <div class="period-lbl">Period Profit</div>
-        <div class="period-val green">₹{{ total_profit_period|floatformat:0 }}</div>
+      <div class="period-card c-green">
+        <div class="pc-top"><span class="pc-lbl">Period Profit</span><span class="pc-ico">📈</span></div>
+        <div class="pc-val" id="periodProfit">₹{{ total_profit_period|floatformat:0 }}</div>
+        <div><span class="trend-badge trend-flat" id="profitTrend">● Stable</span></div>
+        <span class="pc-tag">net after cost</span>
       </div>
-      <div class="period-item">
-        <div class="period-lbl">Units Sold</div>
-        <div class="period-val" style="color:var(--purple)">{{ total_units_period }}</div>
+      <div class="period-card c-purple">
+        <div class="pc-top"><span class="pc-lbl">Units Sold</span><span class="pc-ico">📦</span></div>
+        <div class="pc-val" id="periodUnits">{{ total_units_period }}</div>
+        <div><span class="trend-badge trend-flat" id="unitsTrend">● Stable</span></div>
+        <span class="pc-tag">items this period</span>
       </div>
-      {% if total_revenue_period and total_profit_period %}
-      <div class="period-item">
-        <div class="period-lbl">Profit Margin</div>
-        <div class="period-val" style="color:var(--gold)">
-          {% widthratio total_profit_period total_revenue_period 100 %}%
-        </div>
+      <div class="period-card c-gold">
+        <div class="pc-top"><span class="pc-lbl">Profit Margin</span><span class="pc-ico">📊</span></div>
+        <div class="pc-val" id="periodMargin">{% if total_revenue_period and total_profit_period %}{% widthratio total_profit_period total_revenue_period 100 %}%{% else %}0%{% endif %}</div>
+        <div>{% if total_revenue_period and total_profit_period %}{% widthratio total_profit_period total_revenue_period 100 as mv %}<span class="trend-badge {% if mv >= 25 %}trend-up{% else %}trend-down{% endif %}" id="marginTrend">{% if mv >= 25 %}↑ Above target{% else %}↓ Below target{% endif %}</span>{% else %}<span class="trend-badge trend-flat" id="marginTrend">● No data</span>{% endif %}</div>
+        <span class="pc-tag">target: 25%+</span>
       </div>
-      {% endif %}
-      <div class="period-tag">{{ range_label }} · {{ section_label }}</div>
     </div>
 
     <!-- ── KPI ROW ── -->
@@ -346,32 +332,76 @@ setInterval(updateClock, 1000);
       <div class="kpi c-cyan">
         <div class="kpi-ico">💰</div>
         <div class="kpi-lbl">Today's Revenue</div>
-        <div class="kpi-val">₹{{ total_revenue_today|floatformat:0 }}</div>
-        <div class="kpi-sub">{{ total_units_today }} unit{{ total_units_today|pluralize }} sold</div>
+        <div class="kpi-val" id="kpiRevToday">₹{{ total_revenue_today|floatformat:0 }}</div>
+        <div class="kpi-sub" id="kpiUnitsToday">{{ total_units_today }} unit{{ total_units_today|pluralize }} sold</div>
       </div>
       <div class="kpi c-green">
         <div class="kpi-ico">📈</div>
         <div class="kpi-lbl">Today's Profit</div>
-        <div class="kpi-val">₹{{ total_profit_today|floatformat:0 }}</div>
+        <div class="kpi-val" id="kpiProfToday">₹{{ total_profit_today|floatformat:0 }}</div>
         <div class="kpi-sub">net after purchase cost</div>
       </div>
       <div class="kpi c-purple">
         <div class="kpi-ico">🗓</div>
         <div class="kpi-lbl">Year Revenue</div>
-        <div class="kpi-val">₹{{ total_revenue_period|floatformat:0 }}</div>
-        <div class="kpi-sub">{{ range_label }}</div>
+        <div class="kpi-val" id="kpiYearRev">₹{{ total_revenue_period|floatformat:0 }}</div>
+        <div class="kpi-sub" id="kpiYearLabel">{{ range_label }}</div>
       </div>
       <div class="kpi c-orange">
         <div class="kpi-ico">⚠</div>
         <div class="kpi-lbl">Low Stock SKUs</div>
-        <div class="kpi-val">{{ low_stock_count }}</div>
+        <div class="kpi-val" id="kpiLowStock">{{ low_stock_count }}</div>
         <div class="kpi-sub">need reorder now</div>
       </div>
-      <div class="kpi c-gold">
+      <div class="kpi c-red">
         <div class="kpi-ico">☠</div>
         <div class="kpi-lbl">Dead Stock Items</div>
-        <div class="kpi-val">{{ dead_stock_count }}</div>
+        <div class="kpi-val" id="kpiDeadStock">{{ dead_stock_count }}</div>
         <div class="kpi-sub">{{ DEAD_STOCK_DAYS }}+ days no sale</div>
+      </div>
+    </div>
+
+    <!-- ── SMART INSIGHTS (below KPI row) ── -->
+    <div class="insights-box" id="insightsBox">
+      <div class="insights-top">
+        <div class="insights-header"><span class="insights-header-dot"></span>Smart Insights</div>
+        <a href="/admin/store/sale/" class="insights-btn">View Details →</a>
+      </div>
+      <div class="insights-list" id="insightsGrid">
+        {% if total_revenue_today > 0 %}
+        <div class="insight-item good">
+          <div class="insight-icon">💰</div>
+          <div class="insight-text"><div class="insight-label">₹{{ total_revenue_today|floatformat:0 }} revenue today</div></div>
+        </div>
+        {% else %}
+        <div class="insight-item">
+          <div class="insight-icon">📅</div>
+          <div class="insight-text"><div class="insight-label">No sales recorded today</div></div>
+        </div>
+        {% endif %}
+        {% if low_stock_count > 0 %}
+        <div class="insight-item warn">
+          <div class="insight-icon">⚠️</div>
+          <div class="insight-text"><div class="insight-label">{{ low_stock_count }} SKU{{ low_stock_count|pluralize }} low on stock</div></div>
+        </div>
+        {% else %}
+        <div class="insight-item good">
+          <div class="insight-icon">✅</div>
+          <div class="insight-text"><div class="insight-label">All stock levels healthy</div></div>
+        </div>
+        {% endif %}
+        {% if dead_stock_count > 0 %}
+        <div class="insight-item danger">
+          <div class="insight-icon">💀</div>
+          <div class="insight-text"><div class="insight-label">{{ dead_stock_count }} item{{ dead_stock_count|pluralize }} dead {{ DEAD_STOCK_DAYS }}+ days</div></div>
+        </div>
+        {% endif %}
+        {% if total_profit_period > 0 and total_revenue_period > 0 %}
+        <div class="insight-item {% widthratio total_profit_period total_revenue_period 100 as m %}{% if m >= 25 %}good{% else %}warn{% endif %}">
+          <div class="insight-icon">📊</div>
+          <div class="insight-text"><div class="insight-label">{{ range_label }} margin: {% widthratio total_profit_period total_revenue_period 100 %}%</div></div>
+        </div>
+        {% endif %}
       </div>
     </div>
 
@@ -411,7 +441,6 @@ setInterval(updateClock, 1000);
       </div>
     </div>
 
-
     <!-- ── PROFIT MARGIN BY CATEGORY ── -->
     <div class="g-full">
       <div class="panel">
@@ -423,80 +452,67 @@ setInterval(updateClock, 1000);
       </div>
     </div>
 
-    <!-- ── TOP PRODUCTS ── -->
-    <div class="g-full">
-      <div class="panel">
-        <div class="ph">
-          <span class="ph-title">🔥 Top Selling Products</span>
-          <span class="ph-meta">
-            {{ range_label|upper }} · {{ section_label|upper }}
-            {% if search_query %} · SEARCH: "{{ search_query }}"{% endif %}
-          </span>
-        </div>
-        <div class="pb" style="padding:0">
-          <table class="dtable">
-            <thead><tr><th>#</th><th>Product</th><th>Section › Category</th><th>Units</th><th>Revenue</th><th>Profit</th><th>Status</th></tr></thead>
-            <tbody>
-              {% for p in top_products %}
-              <tr>
-                <td style="font-family:'JetBrains Mono',monospace;color:var(--t3);font-weight:700">{{ forloop.counter }}</td>
-                <td class="td-name">{{ p.product__name }}</td>
-                <td style="color:var(--t3);font-size:11px">{{ p.product__category__section__name }} › {{ p.product__category__name }}</td>
-                <td style="font-family:'JetBrains Mono',monospace;color:var(--cyan)">{{ p.units }}</td>
-                <td style="color:var(--green);font-weight:600">₹{{ p.revenue|floatformat:0 }}</td>
-                <td style="color:var(--green)">₹{{ p.profit|floatformat:0 }}</td>
-                <td>{% if forloop.counter <= 3 %}<span class="pill p-green">HOT 🔥</span>{% else %}<span class="pill p-cyan">RISING</span>{% endif %}</td>
-              </tr>
-              {% empty %}
-              <tr><td colspan="7" class="empty">No sales data for this filter</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── LOW STOCK + DEAD STOCK ── -->
-    <div class="g1-1">
-      <div class="panel">
-        <div class="ph">
-          <span class="ph-title">⚠ Low Stock Alerts</span>
-          <span class="ph-meta">{{ low_stock_count }} SKU{{ low_stock_count|pluralize }} · {{ section_label|upper }}</span>
-        </div>
-        <div class="pb" style="padding:0">
-          <table class="dtable">
-            <thead><tr><th>Product</th><th>Size</th><th>Qty</th><th>Level</th><th>Status</th></tr></thead>
-            <tbody>
-              {% for item in low_stock_items %}
-              <tr>
-                <td>
-                  <div class="td-name">{{ item.product }}</div>
-                  <div style="font-size:10px;color:var(--t3)">{{ item.section }} › {{ item.category }}</div>
-                </td>
-                <td style="font-family:'JetBrains Mono',monospace">{{ item.size }}</td>
-                <td style="font-family:'JetBrains Mono',monospace;color:{% if item.critical %}var(--red){% else %}var(--orange){% endif %};font-weight:700">{{ item.quantity }}</td>
-                <td>
-                  <div class="sbar-wrap">
-                    <div class="sbar"><div class="sbar-fill" style="width:{{ item.pct }}%;background:{% if item.critical %}var(--red){% else %}var(--orange){% endif %}"></div></div>
-                    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:{% if item.critical %}var(--red){% else %}var(--orange){% endif %}">{{ item.pct }}%</span>
-                  </div>
-                </td>
-                <td>{% if item.critical %}<span class="pill p-red">CRITICAL</span>{% else %}<span class="pill p-orange">LOW</span>{% endif %}</td>
-              </tr>
-              {% empty %}
-              <tr><td colspan="5" class="empty">✅ All stock levels healthy</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+    <!-- ── TABBED PANEL: Top Selling / Low Stock / Dead Stock ── -->
+    <div class="tab-panel g-full">
+      <div class="tab-header">
+        <button class="tab-btn active" data-tab="top">🔥 Top Selling <span class="tab-badge" id="tabBadgeTop">{{ top_products|length }}</span></button>
+        <button class="tab-btn" data-tab="low">⚠ Low Stock <span class="tab-badge" id="tabBadgeLow">{{ low_stock_count }}</span></button>
+        <button class="tab-btn" data-tab="dead">💀 Dead Stock <span class="tab-badge" id="tabBadgeDead">{{ dead_stock_count }}</span></button>
       </div>
 
-      <div class="panel">
-        <div class="ph">
-          <span class="ph-title">📦 Dead Stock Detection</span>
-          <span class="ph-meta">NO SALE IN {{ DEAD_STOCK_DAYS }}+ DAYS</span>
-        </div>
-        <div class="pb">
+      <!-- Tab: Top Selling -->
+      <div class="tab-content active" id="tab-top">
+        <table class="dtable">
+          <thead><tr><th>#</th><th>Product</th><th>Section › Category</th><th>Units</th><th>Revenue</th><th>Profit</th><th>Status</th></tr></thead>
+          <tbody id="topProductsTbody">
+            {% for p in top_products %}
+            <tr>
+              <td style="font-family:'JetBrains Mono',monospace;color:var(--t3);font-weight:700">{{ forloop.counter }}</td>
+              <td class="td-name">{{ p.product__name }}</td>
+              <td style="color:var(--t3);font-size:11px">{{ p.product__category__section__name }} › {{ p.product__category__name }}</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:var(--cyan)">{{ p.units }}</td>
+              <td style="color:var(--green);font-weight:600">₹{{ p.revenue|floatformat:0 }}</td>
+              <td style="color:var(--green)">₹{{ p.profit|floatformat:0 }}</td>
+              <td>{% if forloop.counter <= 3 %}<span class="pill p-green">HOT 🔥</span>{% else %}<span class="pill p-cyan">RISING</span>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="empty">No sales data for this filter</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tab: Low Stock -->
+      <div class="tab-content" id="tab-low">
+        <table class="dtable">
+          <thead><tr><th>Product</th><th>Size</th><th>Qty</th><th>Level</th><th>Status</th></tr></thead>
+          <tbody id="lowStockTbody">
+            {% for item in low_stock_items %}
+            <tr>
+              <td>
+                <div class="td-name">{{ item.product }}</div>
+                <div style="font-size:10px;color:var(--t3)">{{ item.section }} › {{ item.category }}</div>
+              </td>
+              <td style="font-family:'JetBrains Mono',monospace">{{ item.size }}</td>
+              <td style="font-family:'JetBrains Mono',monospace;color:{% if item.critical %}var(--red){% else %}var(--orange){% endif %};font-weight:700">{{ item.quantity }}</td>
+              <td>
+                <div class="sbar-wrap">
+                  <div class="sbar"><div class="sbar-fill" style="width:{{ item.pct }}%;background:{% if item.critical %}var(--red){% else %}var(--orange){% endif %}"></div></div>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:{% if item.critical %}var(--red){% else %}var(--orange){% endif %}">{{ item.pct }}%</span>
+                </div>
+              </td>
+              <td>{% if item.critical %}<span class="pill p-red">CRITICAL</span>{% else %}<span class="pill p-orange">LOW</span>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="empty">✅ All stock levels healthy</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tab: Dead Stock -->
+      <div class="tab-content" id="tab-dead">
+        <div style="padding:18px" id="deadStockDiv">
           {% for item in dead_stock_items %}
           <div class="dead-row">
             <span class="dead-icon">{% if item.truly_dead %}☠{% else %}⚠{% endif %}</span>
@@ -522,10 +538,10 @@ setInterval(updateClock, 1000);
         </div>
         <div class="pb">
           <div class="aging-grid" style="margin-bottom:20px">
-            <div class="age-cell age-fresh"><div class="age-lbl">0–30 DAYS</div><div class="age-num">{{ aging.fresh }}</div><div class="age-sub">Fresh Stock</div></div>
-            <div class="age-cell age-normal"><div class="age-lbl">31–60 DAYS</div><div class="age-num">{{ aging.normal }}</div><div class="age-sub">Normal</div></div>
-            <div class="age-cell age-warn"><div class="age-lbl">61–90 DAYS</div><div class="age-num">{{ aging.warn }}</div><div class="age-sub">Review Needed</div></div>
-            <div class="age-cell age-dead"><div class="age-lbl">90+ DAYS</div><div class="age-num">{{ aging.dead }}</div><div class="age-sub">Likely Dead</div></div>
+            <div class="age-cell age-fresh"><div class="age-lbl">0–30 DAYS</div><div class="age-num" id="ageFresh">{{ aging.fresh }}</div><div class="age-sub">Fresh Stock</div></div>
+            <div class="age-cell age-normal"><div class="age-lbl">31–60 DAYS</div><div class="age-num" id="ageNormal">{{ aging.normal }}</div><div class="age-sub">Normal</div></div>
+            <div class="age-cell age-warn"><div class="age-lbl">61–90 DAYS</div><div class="age-num" id="ageWarn">{{ aging.warn }}</div><div class="age-sub">Review Needed</div></div>
+            <div class="age-cell age-dead"><div class="age-lbl">90+ DAYS</div><div class="age-num" id="ageDead">{{ aging.dead }}</div><div class="age-sub">Likely Dead</div></div>
           </div>
           <canvas id="agingChart" style="max-height:140px"></canvas>
         </div>
@@ -534,132 +550,269 @@ setInterval(updateClock, 1000);
 
   </div>
 </div>
+
+
+<script>
+// ── Theme ─────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', function () {
+  var t = localStorage.getItem('eod_theme') || 'light';
+  var btn = document.getElementById('themeBtn');
+  if (btn) btn.textContent = t === 'dark' ? '🌙 Dark' : '☀️ Light';
+});
+
+// ── State (Django vars) ───────────────────────────────────────────
+// ── State (Django vars) ───────────────────────────────────────────
+var _state = {
+  range:     '{{ active_range }}',
+  section:   '{{ active_section }}',
+  q:         '{{ search_query }}',
+  from_date: '{{ active_from_date }}',
+  to_date:   '{{ active_to_date }}',
+};
+
+// ── Initial chart data (Django vars) ─────────────────────────────
+var _initialData = {
+  monthly_labels:  {{ monthly_labels|safe }},
+  monthly_revenue: {{ monthly_revenue|safe }},
+  monthly_profit:  {{ monthly_profit|safe }},
+  growth_data:     {{ growth_data|safe }},
+  weekly_labels:   {{ weekly_labels|safe }},
+  weekly_revenue:  {{ weekly_revenue|safe }},
+  weekly_profit:   {{ weekly_profit|safe }},
+  cat_labels:      {{ cat_labels|safe }},
+  cat_data:        {{ cat_data|safe }},
+  aging: {
+    fresh:  {{ aging.fresh }},
+    normal: {{ aging.normal }},
+    warn:   {{ aging.warn }},
+    dead:   {{ aging.dead }}
+  },
+  margin_labels:  {{ margin_labels|safe }},
+  margin_data:    {{ margin_data|safe }},
+  margin_revenue: {{ margin_revenue|safe }},
+  margin_profit:  {{ margin_profit|safe }},
+};
+var _charts = {};
+var isLight = function() { return document.documentElement.getAttribute('data-theme') !== 'dark'; };
+var gc = function() { return isLight() ? 'rgba(203,213,225,0.6)' : 'rgba(30,45,61,0.5)'; };
+var tc = function() { return isLight() ? '#94a3b8' : '#3d5a73'; };
+var lc = function() { return isLight() ? '#475569' : '#7a9bb5'; };
+var TT = {backgroundColor:'#111820',borderColor:'#1e2d3d',borderWidth:1,titleColor:'#00d4ff',bodyColor:'#e2eaf4'};
+
+function initCharts(d) {
+  Object.values(_charts).forEach(function(c){ c.destroy(); });
+  _charts = {};
+  var mCtx = document.getElementById('monthlyChart').getContext('2d');
+  var mG = mCtx.createLinearGradient(0,0,0,230);
+  mG.addColorStop(0,'rgba(0,212,255,0.25)'); mG.addColorStop(1,'rgba(0,212,255,0)');
+  _charts.monthly = new Chart(mCtx,{type:'line',data:{labels:d.monthly_labels,datasets:[
+    {label:'Revenue',data:d.monthly_revenue,borderColor:'#00d4ff',backgroundColor:mG,borderWidth:2,tension:0.4,fill:true,pointRadius:3,pointBackgroundColor:'#00d4ff'},
+    {label:'Profit',data:d.monthly_profit,borderColor:'#00c97a',backgroundColor:'transparent',borderWidth:2,tension:0.4,pointRadius:3,pointBackgroundColor:'#00c97a',borderDash:[4,3]},
+  ]},options:{responsive:true,plugins:{legend:{labels:{color:lc(),boxWidth:12}},tooltip:TT},
+  scales:{x:{grid:{color:gc()},ticks:{color:tc()}},y:{grid:{color:gc()},ticks:{color:tc(),callback:function(v){return '₹'+v.toLocaleString();}}}}}});
+
+  _charts.cat = new Chart(document.getElementById('catChart'),{type:'doughnut',data:{
+    labels:d.cat_labels.length?d.cat_labels:['No data'],
+    datasets:[{data:d.cat_data.length?d.cat_data:[1],backgroundColor:['#00d4ff','#00c97a','#a855f7','#d97706','#ff6b35','#3d5a73','#ff3b5c'],borderColor:isLight()?'#fff':'#111820',borderWidth:3,hoverOffset:8}]
+  },options:{responsive:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:10,color:lc()}},tooltip:TT}}});
+
+  _charts.weekly = new Chart(document.getElementById('weeklyChart'),{type:'bar',data:{
+    labels:d.weekly_labels.length?d.weekly_labels:['No data'],
+    datasets:[
+      {label:'Revenue',data:d.weekly_revenue,backgroundColor:'rgba(0,212,255,0.5)',borderColor:'#00d4ff',borderWidth:1,borderRadius:3},
+      {label:'Profit',data:d.weekly_profit,backgroundColor:'rgba(0,201,122,0.4)',borderColor:'#00c97a',borderWidth:1,borderRadius:3},
+    ]
+  },options:{responsive:true,plugins:{legend:{labels:{color:lc(),boxWidth:12}},tooltip:TT},
+  scales:{x:{grid:{color:gc()},ticks:{color:tc()}},y:{grid:{color:gc()},ticks:{color:tc(),callback:function(v){return '₹'+v;}}}}}});
+
+  _charts.growth = new Chart(document.getElementById('growthChart'),{type:'bar',data:{
+    labels:d.monthly_labels,
+    datasets:[{label:'MoM %',data:d.growth_data,
+      backgroundColor:d.growth_data.map(function(v){return v===null?'transparent':v>=0?'rgba(0,201,122,0.6)':'rgba(255,59,92,0.6)';}),
+      borderColor:d.growth_data.map(function(v){return v===null?'transparent':v>=0?'#00c97a':'#ff3b5c';}),
+      borderWidth:1,borderRadius:3}]
+  },options:{responsive:true,plugins:{legend:{display:false},tooltip:TT},
+  scales:{x:{grid:{color:gc()},ticks:{color:tc()}},y:{grid:{color:gc()},ticks:{color:tc(),callback:function(v){return v+'%';}}}}}});
+
+  var agingData=[d.aging.fresh,d.aging.normal,d.aging.warn,d.aging.dead];
+  _charts.aging = new Chart(document.getElementById('agingChart'),{type:'bar',data:{
+    labels:['0-30 Days','31-60 Days','61-90 Days','90+ Days'],
+    datasets:[{label:'Products',data:agingData,backgroundColor:['rgba(0,201,122,0.5)','rgba(0,212,255,0.5)','rgba(217,119,6,0.5)','rgba(255,59,92,0.5)'],borderColor:['#00c97a','#00d4ff','#d97706','#ff3b5c'],borderWidth:1,borderRadius:4}]
+  },options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:TT},scales:{x:{grid:{color:gc()},ticks:{color:tc()}},y:{grid:{color:'transparent'},ticks:{color:lc()}}}}});
+
+  _charts.margin = new Chart(document.getElementById('marginChart'),{type:'bar',data:{
+    labels:d.margin_labels.length?d.margin_labels:['No data'],
+    datasets:[
+      {label:'Margin %',data:d.margin_data,backgroundColor:d.margin_data.map(function(v){return v>=30?'rgba(0,201,122,0.7)':v>=20?'rgba(251,191,36,0.7)':'rgba(255,59,92,0.7)';}),borderColor:d.margin_data.map(function(v){return v>=30?'#00c97a':v>=20?'#fbbf24':'#ff3b5c';}),borderWidth:1,borderRadius:4,yAxisID:'y'},
+      {label:'Revenue',data:d.margin_revenue,type:'line',borderColor:'#00d4ff',backgroundColor:'transparent',borderWidth:2,tension:0.4,pointRadius:4,pointBackgroundColor:'#00d4ff',yAxisID:'y1'},
+    ]
+  },options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:lc(),boxWidth:12}},tooltip:TT},
+  scales:{x:{grid:{color:gc()},ticks:{color:tc()}},y:{grid:{color:gc()},ticks:{color:tc(),callback:function(v){return v+'%';}},title:{display:true,text:'Margin %',color:tc()}},
+  y1:{position:'right',grid:{display:false},ticks:{color:'#00d4ff',callback:function(v){return '₹'+v.toLocaleString();}},title:{display:true,text:'Revenue',color:'#00d4ff'}}}}});
+}
+
+function setTrend(id, pct) {
+  var el = document.getElementById(id);
+  if (!el || pct === null || pct === undefined) return;
+  var abs = Math.abs(pct);
+  var label = (pct >= 0 ? '↑ +' : '↓ -') + abs + '%';
+  if (pct === 0) { el.className = 'trend-badge trend-flat'; el.textContent = '● No change'; return; }
+  el.className = 'trend-badge ' + (pct > 0 ? 'trend-up' : 'trend-down');
+  el.textContent = label;
+}
+
+function animateNum(el, newVal, prefix) {
+  if (!el) return;
+  var start = 0;
+  var end = parseInt(newVal.toString().replace(/[^0-9]/g, '')) || 0;
+  var duration = 400;
+  var startTime = null;
+  function step(ts) {
+    if (!startTime) startTime = ts;
+    var progress = Math.min((ts - startTime) / duration, 1);
+    var current = Math.floor(progress * end);
+    el.textContent = (prefix || '') + current.toLocaleString();
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = (prefix || '') + end.toLocaleString();
+  }
+  requestAnimationFrame(step);
+  el.classList.remove('num-updated');
+  void el.offsetWidth;
+  el.classList.add('num-updated');
+}
+
+function updateInsights(data) {
+  var grid = document.getElementById('insightsGrid');
+  if (!grid) return;
+  var items = [];
+  if (data.revenue > 0) {
+    items.push({cls:'good', icon:'💰', text:'₹' + Math.round(data.revenue).toLocaleString() + ' revenue this ' + (_state.range || 'period')});
+  } else {
+    items.push({cls:'', icon:'📅', text:'No sales recorded for this period'});
+  }
+  if (data.units > 0) {
+    items.push({cls:'good', icon:'📦', text: data.units + ' units sold this period'});
+  }
+  var m = data.margin_pct || 0;
+  if (m >= 25) items.push({cls:'good', icon:'📊', text:'Margin ' + m + '% — above target'});
+  else if (m > 0) items.push({cls:'warn', icon:'📉', text:'Margin ' + m + '% — below 25% target'});
+  grid.innerHTML = items.map(function(i){
+    return '<div class="insight-item ' + i.cls + '"><div class="insight-icon">' + i.icon + '</div><div class="insight-text"><div class="insight-label">' + i.text + '</div></div></div>';
+  }).join('');
+}
+
+function fetchDashboard() {
+  var params = new URLSearchParams();
+  params.set('range',   _state.range);
+  params.set('section', _state.section);
+  if (_state.q)         params.set('q',        _state.q);
+  if (_state.from_date) params.set('from_date', _state.from_date);
+  if (_state.to_date)   params.set('to_date',   _state.to_date);
+  document.getElementById('loadingOverlay').classList.add('show');
+  fetch('/api/dashboard/?' + params.toString())
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      document.getElementById('loadingOverlay').classList.remove('show');
+      animateNum(document.getElementById('periodRevenue'), Math.round(data.revenue), '₹');
+      animateNum(document.getElementById('periodProfit'),  Math.round(data.profit),  '₹');
+      animateNum(document.getElementById('periodUnits'),   data.units, '');
+      var margEl = document.getElementById('periodMargin');
+      if (margEl) { margEl.textContent = data.margin_pct + '%'; margEl.classList.remove('num-updated'); void margEl.offsetWidth; margEl.classList.add('num-updated'); }
+      // ── Trend badges from API ─────────────────────────────
+      setTrend('periodTrend', data.rev_pct);
+      setTrend('profitTrend', data.profit_pct);
+      setTrend('unitsTrend',  data.units_pct);
+      var mBadge = document.getElementById('marginTrend');
+      if (mBadge) {
+        var mp = data.margin_pct || 0;
+        if (mp >= 25) { mBadge.className = 'trend-badge trend-up';   mBadge.textContent = '↑ Above target'; }
+        else if (mp > 0) { mBadge.className = 'trend-badge trend-down'; mBadge.textContent = '↓ Below target'; }
+        else { mBadge.className = 'trend-badge trend-flat'; mBadge.textContent = '● No data'; }
+      }
+      animateNum(document.getElementById('kpiRevToday'),  Math.round(data.revenue), '₹');
+      animateNum(document.getElementById('kpiProfToday'), Math.round(data.profit),  '₹');
+      animateNum(document.getElementById('kpiYearRev'),   Math.round(data.revenue), '₹');
+      var ptag = document.getElementById('periodTag');
+      if (ptag) ptag.textContent = _state.range.toUpperCase() + ' · ' + (_state.section === 'all' ? 'ALL SECTIONS' : 'SECTION ' + _state.section);
+      updateInsights(data);
+      history.pushState({}, '', '/admin/?' + params.toString());
+    })
+    .catch(function(err) {
+      document.getElementById('loadingOverlay').classList.remove('show');
+      console.error('API ERROR:', err);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  Chart.defaults.font.family = "'JetBrains Mono',monospace";
+  Chart.defaults.font.size = 10;
+  initCharts(_initialData);
+
+  // ── Tab switching ─────────────────────────────────────────
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var tab = this.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      document.querySelectorAll('.tab-content').forEach(function(c){ c.classList.remove('active'); });
+      this.classList.add('active');
+      var tc = document.getElementById('tab-' + tab);
+      if (tc) tc.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.period-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      _state.range = this.dataset.range;
+      _state.from_date = '';
+      _state.to_date = '';
+      document.querySelectorAll('.period-btn').forEach(function(b){ b.classList.remove('active'); });
+      this.classList.add('active');
+      var dp = document.getElementById('datePicker');
+      if (dp) { dp.value = ''; dp.classList.remove('active'); }
+      fetchDashboard();
+    });
+  });
+
+  document.querySelectorAll('.section-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      _state.section = this.dataset.section;
+      document.querySelectorAll('.section-btn').forEach(function(b){ b.classList.remove('active'); });
+      this.classList.add('active');
+      fetchDashboard();
+    });
+  });
+
+  var sb = document.getElementById('searchBtn');
+  if (sb) sb.addEventListener('click', function() {
+    _state.q = document.getElementById('searchInput').value;
+    fetchDashboard();
+  });
+  var si = document.getElementById('searchInput');
+  if (si) si.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { _state.q = this.value; fetchDashboard(); }
+  });
+  var cb = document.getElementById('clearSearchBtn');
+  if (cb) cb.addEventListener('click', function() {
+    _state.q = '';
+    document.getElementById('searchInput').value = '';
+    fetchDashboard();
+  });
+
+  var dp = document.getElementById('datePicker');
+  if (dp) dp.addEventListener('change', function() {
+    if (!this.value) return;
+    _state.range = 'custom';
+    _state.from_date = this.value;
+    _state.to_date = this.value;
+    document.querySelectorAll('.period-btn').forEach(function(b){ b.classList.remove('active'); });
+    this.classList.add('active');
+    fetchDashboard();
+  });
+});
+</script>
+
 {% endblock %}
 
 {% block extrascripts %}
 {{ block.super }}
-<script>
-// Set theme button label
-window.addEventListener('DOMContentLoaded',function(){
-  var t=localStorage.getItem('eod_theme')||'light';
-  var btn=document.getElementById('themeBtn');
-  if(btn) btn.textContent=t==='dark'?'🌙 Dark':'☀️ Light';
-});
-
-const monthlyLabels  = {{ monthly_labels|safe }};
-const monthlyRevenue = {{ monthly_revenue|safe }};
-const monthlyProfit  = {{ monthly_profit|safe }};
-const growthData     = {{ growth_data|safe }};
-const weeklyLabels   = {{ weekly_labels|safe }};
-const weeklyRevenue  = {{ weekly_revenue|safe }};
-const weeklyProfit   = {{ weekly_profit|safe }};
-const catLabels      = {{ cat_labels|safe }};
-const catData        = {{ cat_data|safe }};
-const agingData      = [{{ aging.fresh }},{{ aging.normal }},{{ aging.warn }},{{ aging.dead }}];
-
-Chart.defaults.font.family="'JetBrains Mono',monospace";
-Chart.defaults.font.size=10;
-const isLight=()=>document.documentElement.getAttribute('data-theme')!=='dark';
-const gc=()=>isLight()?'rgba(203,213,225,0.6)':'rgba(30,45,61,0.5)';
-const tc=()=>isLight()?'#94a3b8':'#3d5a73';
-const lc=()=>isLight()?'#475569':'#7a9bb5';
-const TT={backgroundColor:'#111820',borderColor:'#1e2d3d',borderWidth:1,titleColor:'#00d4ff',bodyColor:'#e2eaf4'};
-
-// Monthly
-const mCtx=document.getElementById('monthlyChart').getContext('2d');
-const mG=mCtx.createLinearGradient(0,0,0,230);
-mG.addColorStop(0,'rgba(0,212,255,0.25)');mG.addColorStop(1,'rgba(0,212,255,0)');
-new Chart(mCtx,{type:'line',data:{labels:monthlyLabels,datasets:[
-  {label:'Revenue (₹)',data:monthlyRevenue,borderColor:'#00d4ff',backgroundColor:mG,borderWidth:2,tension:0.4,fill:true,pointRadius:3,pointHoverRadius:6,pointBackgroundColor:'#00d4ff'},
-  {label:'Profit (₹)',data:monthlyProfit,borderColor:'#00c97a',backgroundColor:'transparent',borderWidth:2,tension:0.4,pointRadius:3,pointBackgroundColor:'#00c97a',borderDash:[4,3]},
-]},options:{responsive:true,plugins:{legend:{labels:{color:lc(),boxWidth:12}},tooltip:TT},
-scales:{x:{grid:{color:gc()},ticks:{color:tc()}},y:{grid:{color:gc()},ticks:{color:tc(),callback:v=>'₹'+v.toLocaleString()}}}}});
-
-// Donut
-new Chart(document.getElementById('catChart'),{type:'doughnut',data:{
-  labels:catLabels.length?catLabels:['No data'],
-  datasets:[{data:catData.length?catData:[1],backgroundColor:['#00d4ff','#00c97a','#a855f7','#d97706','#ff6b35','#3d5a73','#ff3b5c'],borderColor:isLight()?'#fff':'#111820',borderWidth:3,hoverOffset:8}]
-},options:{responsive:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:10,color:lc()}},tooltip:{...TT,callbacks:{label:c=>` ${c.label}: ${c.raw}%`}}}}});
-
-// Weekly
-new Chart(document.getElementById('weeklyChart'),{type:'bar',data:{
-  labels:weeklyLabels.length?weeklyLabels:['No data'],
-  datasets:[
-    {label:'Revenue',data:weeklyRevenue,backgroundColor:'rgba(0,212,255,0.5)',borderColor:'#00d4ff',borderWidth:1,borderRadius:3},
-    {label:'Profit',data:weeklyProfit,backgroundColor:'rgba(0,201,122,0.4)',borderColor:'#00c97a',borderWidth:1,borderRadius:3},
-  ]
-},options:{responsive:true,plugins:{legend:{labels:{color:lc(),boxWidth:12}},tooltip:TT},
-scales:{x:{grid:{color:gc()},ticks:{color:tc()}},y:{grid:{color:gc()},ticks:{color:tc(),callback:v=>'₹'+v}}}}});
-
-// Growth
-new Chart(document.getElementById('growthChart'),{type:'bar',data:{
-  labels:monthlyLabels,
-  datasets:[{label:'MoM %',data:growthData,
-    backgroundColor:growthData.map(v=>v===null?'transparent':v>=0?'rgba(0,201,122,0.6)':'rgba(255,59,92,0.6)'),
-    borderColor:growthData.map(v=>v===null?'transparent':v>=0?'#00c97a':'#ff3b5c'),
-    borderWidth:1,borderRadius:3}]
-},options:{responsive:true,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>c.raw===null?'':` ${c.raw>0?'+':''}${c.raw}%`}}},
-scales:{x:{grid:{color:gc()},ticks:{color:tc()}},y:{grid:{color:gc()},ticks:{color:tc(),callback:v=>v+'%'}}}}});
-
-// Aging
-new Chart(document.getElementById('agingChart'),{type:'bar',data:{
-  labels:['0–30 Days','31–60 Days','61–90 Days','90+ Days'],
-  datasets:[{label:'Products',data:agingData,
-    backgroundColor:['rgba(0,201,122,0.5)','rgba(0,212,255,0.5)','rgba(217,119,6,0.5)','rgba(255,59,92,0.5)'],
-    borderColor:['#00c97a','#00d4ff','#d97706','#ff3b5c'],borderWidth:1,borderRadius:4}]
-},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:c=>` ${c.raw} products`}}},
-scales:{x:{grid:{color:gc()},ticks:{color:tc()}},y:{grid:{color:'transparent'},ticks:{color:lc()}}}}});
-
-// Margin chart data
-const marginLabels  = {{ margin_labels|safe }};
-const marginData    = {{ margin_data|safe }};
-const marginRevenue = {{ margin_revenue|safe }};
-const marginProfit  = {{ margin_profit|safe }};
-
-// Profit Margin % by Category
-new Chart(document.getElementById("marginChart"),{type:"bar",data:{
-  labels:marginLabels.length?marginLabels:["No data"],
-  datasets:[
-    {label:"Margin %",data:marginData,backgroundColor:marginData.map(v=>v>=30?"rgba(0,201,122,0.7)":v>=20?"rgba(251,191,36,0.7)":"rgba(255,59,92,0.7)"),borderColor:marginData.map(v=>v>=30?"#00c97a":v>=20?"#fbbf24":"#ff3b5c"),borderWidth:1,borderRadius:4,yAxisID:"y"},
-    {label:"Revenue (\u20b9)",data:marginRevenue,type:"line",borderColor:"#00d4ff",backgroundColor:"transparent",borderWidth:2,tension:0.4,pointRadius:4,pointBackgroundColor:"#00d4ff",yAxisID:"y1"},
-  ]
-},options:{responsive:true,interaction:{mode:"index",intersect:false},
-plugins:{legend:{labels:{color:lc(),boxWidth:12}},
-tooltip:{...TT,callbacks:{label:c=>c.dataset.label==="Margin %"?` ${c.raw}%`:` \u20b9${c.raw.toLocaleString()}`}}},
-scales:{
-  x:{grid:{color:gc()},ticks:{color:tc()}},
-  y:{grid:{color:gc()},ticks:{color:tc(),callback:v=>v+"%"},title:{display:true,text:"Margin %",color:tc()}},
-  y1:{position:"right",grid:{display:false},ticks:{color:"#00d4ff",callback:v=>"\u20b9"+v.toLocaleString()},title:{display:true,text:"Revenue",color:"#00d4ff"}}
-}}});
-
-// ── Live IST Clock ────────────────────────────────────────────
-function updateClock() {
-  var now = new Date();
-  var ist = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
-
-  var days   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
-  var day   = days[ist.getDay()];
-  var date  = String(ist.getDate()).padStart(2,'0');
-  var month = months[ist.getMonth()];
-  var year  = ist.getFullYear();
-
-  var hrs   = ist.getHours();
-  var mins  = String(ist.getMinutes()).padStart(2,'0');
-  var secs  = String(ist.getSeconds()).padStart(2,'0');
-  var ampm  = hrs >= 12 ? 'PM' : 'AM';
-  hrs = hrs % 12 || 12;
-  hrs = String(hrs).padStart(2,'0');
-
-  var clock = document.getElementById('liveClock');
-  if(clock) {
-    clock.textContent = day + ', ' + date + ' ' + month + ' ' + year + '  ' + hrs + ':' + mins + ':' + secs + ' ' + ampm + ' IST';
-  }
-}
-
-// Start clock immediately and update every second
-updateClock();
-setInterval(updateClock, 1000);
-</script>
 {% endblock %}

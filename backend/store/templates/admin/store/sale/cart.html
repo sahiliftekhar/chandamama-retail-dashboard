@@ -1,0 +1,12 @@
+def cart_view(self, request):
+    products = Product.objects.all().order_by("name")
+    import json as _json
+    products_json = _json.dumps([{"id": p.id, "name": p.name} for p in products])
+    context = dict(
+        self.admin_site.each_context(request),
+        title="Add Sale — Cart",
+        products=products,
+        products_json=products_json,
+        opts=self.model._meta,
+    )
+    return TemplateResponse(request, "admin/store/sale/cart.html", context)

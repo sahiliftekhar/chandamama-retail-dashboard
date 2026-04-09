@@ -2,6 +2,30 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from decimal import Decimal
 from datetime import date
+from django.db.models import Sum
+
+# ── Fix 3: Size range detection ───────────────────────────────────
+def expand_size_range(size_str):
+    """
+    Expands garment size ranges into individual sizes.
+    Always even numbers (garment sizing convention).
+
+    Examples:
+        "16-18" → ["16", "18"]
+        "16-32" → ["16","18","20","22","24","26","28","30","32"]
+        "20-30" → ["20","22","24","26","28","30"]
+        "M"     → ["M"]  (non-range — returned as-is)
+        "NA"    → ["NA"]
+    """
+    import re
+    size_str = size_str.strip()
+    match = re.match(r'^(\d+)-(\d+)$', size_str)
+    if match:
+        start = int(match.group(1))
+        end   = int(match.group(2))
+        if start < end and start >= 10:  # valid garment range
+            return [str(i) for i in range(start, end + 1, 2)]
+    return [size_str]  # not a range — return as-is
 
 
 # -----------------------------
@@ -27,7 +51,7 @@ class Category(models.Model):
     )
 
     class Meta:
-        unique_together  = ('name', 'section')
+        unique_together     = ('name', 'section')
         verbose_name_plural = "Categories"
 
     def __str__(self):
@@ -73,7 +97,6 @@ class Pricing(models.Model):
     )
 
     class Meta:
-        unique_together = ('product', 'size')
         verbose_name_plural = "Pricings"
 
     def clean(self):
@@ -102,7 +125,7 @@ class Stock(models.Model):
     quantity = models.PositiveIntegerField()
 
     class Meta:
-        unique_together = ('product', 'size')
+        pass  # ← No unique_together!
 
     def __str__(self):
         return f"{self.product.name} - {self.size}"
@@ -132,13 +155,46 @@ class Sale(models.Model):
     profit    = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
-    sold_date = models.DateTimeField(auto_now_add=True)
+    # ✅ Fix 1: editable — user can enter past dates
+    sold_date = models.DateField(
+        default=None, null=True, blank=True,
+        help_text="Leave blank to use today's date"
+    )
+    # ✅ Payment mode
+    PAYMENT_CHOICES = [
+        ('cash',     'Cash'),
+        ('phonepay', 'PhonePe'),
+        ('due',      'Due (Pay Later)'),
+    ]
+    payment_mode = models.CharField(
+        max_length=10,
+        choices=PAYMENT_CHOICES,
+        default='cash'
+    )
+    is_due = models.BooleanField(default=False)
+    due_amount = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        default=0.00, null=True, blank=True,
+        help_text="Amount pending if payment is Due"
+    )
+    customer_name = models.CharField(
+        max_length=100, null=True, blank=True,
+        help_text="Customer name (required for Due sales)"
+    )
+    customer_phone = models.CharField(
+        max_length=15, null=True, blank=True,
+        help_text="Customer phone (required for Due sales)"
+    )
+    # ✅ pricing_id — to handle multiple pricings for same product+size
+    pricing_id = models.IntegerField(null=True, blank=True)
 
     def clean(self):
-        # Fetch size-specific pricing
-        try:
-            pricing = Pricing.objects.get(product=self.product, size=self.size)
-        except Pricing.DoesNotExist:
+        # Fetch size-specific pricing using pricing_id if available
+        if self.pricing_id:
+            pricing = Pricing.objects.filter(id=self.pricing_id).first()
+        else:
+            pricing = Pricing.objects.filter(product=self.product, size=self.size).first()
+        if not pricing:
             raise ValidationError(
                 f"No pricing found for {self.product.name} in size {self.size}."
             )
@@ -146,28 +202,55 @@ class Sale(models.Model):
         purchase_rate = pricing.purchase_rate
 
         # Stock validation
-        try:
-            stock = Stock.objects.get(product=self.product, size=self.size)
-        except Stock.DoesNotExist:
+        stock = Stock.objects.filter(product=self.product, size=self.size).first()
+        if not stock:
             raise ValidationError(
                 "Stock entry does not exist for this size."
             )
-
-        if self.quantity > stock.quantity:
+        total_stock = Stock.objects.filter(
+            product=self.product, size=self.size
+        ).aggregate(total=models.Sum('quantity'))['total'] or 0
+        if self.quantity > total_stock:
             raise ValidationError(
-                f"Not enough stock. Available: {stock.quantity}"
+                f"Not enough stock. Available: {total_stock}"
             )
 
-        # Margin validation (20% minimum)
+        # Margin warning (20% minimum) — soft warning, not a block
         min_allowed = purchase_rate * Decimal("1.20")
+        actual_margin = round((self.selling_price - purchase_rate) / purchase_rate * 100, 1)
         if self.selling_price < min_allowed:
-            raise ValidationError(
+            import warnings
+            warnings.warn(
                 f"Selling price ₹{self.selling_price} is below 20% margin. "
-                f"Minimum allowed: ₹{min_allowed:.2f}"
+                f"Actual margin: {actual_margin}%. Minimum recommended: ₹{min_allowed:.2f}"
             )
+
+        # Due payment validation
+        if self.payment_mode == 'due':
+            self.is_due = True
+            self.due_amount = self.selling_price * self.quantity
+            if not self.customer_name or not self.customer_phone:
+                raise ValidationError(
+                    "Customer name and phone are required for Due sales."
+                )
+        else:
+            self.is_due = False
+            self.due_amount = 0
 
     def save(self, *args, **kwargs):
-        pricing = Pricing.objects.get(product=self.product, size=self.size)
+        # ✅ Fix 1: auto-set sold_date if not provided
+        if not self.sold_date:
+            from django.utils import timezone
+            self.sold_date = timezone.now()
+
+        # ✅ Use pricing_id if available to avoid MultipleObjectsReturned
+        if self.pricing_id:
+            pricing = Pricing.objects.filter(id=self.pricing_id).first()
+        else:
+            pricing = Pricing.objects.filter(product=self.product, size=self.size).first()
+
+        if not pricing:
+            return
 
         # Snapshot pricing at time of sale
         self.purchase_rate_snapshot = pricing.purchase_rate
@@ -182,14 +265,15 @@ class Sale(models.Model):
         super().save(*args, **kwargs)
 
         # Deduct stock
-        stock = Stock.objects.get(product=self.product, size=self.size)
-        stock.quantity -= self.quantity
-        stock.save()
+        stock = Stock.objects.filter(product=self.product, size=self.size).first()
+        if stock:
+            stock.quantity -= self.quantity
+            stock.save()
 
-        # Low stock WhatsApp alert
-        from .utils import send_whatsapp_alert
-        if stock.quantity <= self.product.low_stock_threshold:
-            message = f"""
+            # Low stock WhatsApp alert
+            from .utils import send_whatsapp_alert
+            if stock.quantity <= self.product.low_stock_threshold:
+                message = f"""
 ⚠️ LOW STOCK ALERT
 
 Product : {self.product.name}
@@ -198,7 +282,7 @@ Remaining: {stock.quantity}
 
 Please restock soon.
 """
-            send_whatsapp_alert(message)
+                send_whatsapp_alert(message)
 
     def __str__(self):
         return f"Sale — {self.product.name} ({self.size})"

@@ -1,0 +1,32 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+  <li>
+    <a href="{{ cart_url }}" style="
+      background:#f0ad4e;
+      color:#000;
+      padding:8px 15px;
+      border-radius:6px;
+      font-weight:700;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      font-size:13px;
+    ">🛒 ADD CART +</a>
+  </li>
+  <li>
+    <a href="add/" style="
+      background:#28a745;
+      color:#fff;
+      padding:8px 15px;
+      border-radius:6px;
+      font-weight:700;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      font-size:13px;
+    ">🧾 ADD SALE +</a>
+  </li>
+{% endblock %}

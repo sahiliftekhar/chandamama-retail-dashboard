@@ -78,7 +78,10 @@ ChandaMama is a full-featured retail management system built on top of Django Ad
 
 | Dashboard Dark Mode | Smart Insights | Sales Cart |
 |---|---|---|
-| *(screenshot)* | *(screenshot)* | *(screenshot)* |
+| <img width="1919" height="1079" alt="Screenshot 2026-04-19 114244" src="https://github.com/user-attachments/assets/04299a0e-0572-449c-adce-1cec489e7430" /> <img width="1919" height="1079" alt="Screenshot 2026-04-19 114313" src="https://github.com/user-attachments/assets/a0d8e652-35ce-4278-b204-7c42cf239188" /> 
+ | <img width="1919" height="1079" alt="Screenshot 2026-04-19 114323" src="https://github.com/user-attachments/assets/3d80d73e-d1d5-4516-8ff2-ee63d1bcb7b8" />
+ | <img width="1919" height="1079" alt="Screenshot 2026-04-19 114440" src="https://github.com/user-attachments/assets/d257e7fd-5401-4d3e-b2ca-6ff7841d51a8" />
+ |
 
 ---
 

@@ -200,7 +200,7 @@ class MyAdminSite(admin.AdminSite):
         cat_data = [round(float(c["revenue"] / total_cat_rev * 100), 1) for c in cat_qs]
 
         # ── Top Selling Products (with search) ────────────────────
-        top_products = (
+        top_products = (  # remarks included via __str__
             base_qs
             .filter(search_filter)
             .values("product__name", "product__category__name",
@@ -1156,6 +1156,13 @@ class ProductAdmin(AuditLogMixin, admin.ModelAdmin):
 
         formset.save_m2m()
 
+    def product_display(self, obj):
+        if obj.remarks:
+            return f"{obj.product} - {obj.remarks}"
+        return str(obj.product)
+    product_display.short_description = 'Product'
+    product_display.admin_order_field = 'product__name'
+
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
         return form
@@ -1208,7 +1215,7 @@ class PricingAdmin(AuditLogMixin, admin.ModelAdmin):
 class StockAdmin(AuditLogMixin, admin.ModelAdmin):
     list_display  = ("product", "section_name", "size", "quantity", "stock_bar")
     list_filter   = ("product__category__section", "product__category")
-    search_fields = ("product__name", "size")
+    search_fields = ("product__name", "size", "remarks")
     ordering      = ("quantity",)
 
     @admin.display(description="Section")
@@ -1238,8 +1245,21 @@ class StockAdmin(AuditLogMixin, admin.ModelAdmin):
 
 @admin.register(Sale, site=my_admin)
 class SaleAdmin(AuditLogMixin, admin.ModelAdmin):
-    list_display = ("product", "size", "quantity", "selling_price_display",
+    list_display = ("product_display", "size", "quantity", "selling_price_display",
                     "profit_display", "margin_live", "payment_badge", "sold_date")
+
+    def product_display(self, obj):
+        if obj.remarks:
+            return f"{obj.product} - {obj.remarks}"
+        return str(obj.product)
+    product_display.short_description = "Product"
+    product_display.admin_order_field = "product__name"
+
+    fieldsets = (
+        (None, {"fields": ("product", "remarks", "size", "quantity", "selling_price", "discount")}),
+        ("Payment", {"fields": ("payment_mode", "customer_name", "customer_phone", "sold_date")}),
+    )
+
     list_filter = (
         ("sold_date", DateFieldListFilter),
         "product__category__section",
@@ -1401,6 +1421,7 @@ class SaleAdmin(AuditLogMixin, admin.ModelAdmin):
                     customer_name  = customer_name if payment_mode == "due" else "",
                     customer_phone = customer_phone if payment_mode == "due" else "",
                     pricing_id    = item.get("pricing_id"),
+                remarks       = item.get("remarks", "") or "",
                 )
                 if sold_date_str:
                     sale.sold_date = _date.fromisoformat(sold_date_str)

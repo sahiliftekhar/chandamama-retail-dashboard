@@ -187,6 +187,10 @@ class Sale(models.Model):
     )
     # ✅ pricing_id — to handle multiple pricings for same product+size
     pricing_id = models.IntegerField(null=True, blank=True)
+    remarks    = models.CharField(
+        max_length=100, blank=True, null=True,
+        help_text='Optional: e.g. Bhagwa, Red Pattern (shown as PRODUCT - Remarks)'
+    )
 
     def clean(self):
         # Fetch size-specific pricing using pricing_id if available
@@ -285,7 +289,10 @@ Please restock soon.
                 send_whatsapp_alert(message)
 
     def __str__(self):
-        return f"Sale — {self.product.name} ({self.size})"
+        name = self.product.name
+        if self.remarks:
+            name = f"{name} - {self.remarks}"
+        return f"Sale — {name} ({self.size})"
 
 
 # -----------------------------

@@ -44,7 +44,7 @@
   <table class="cart-table" id="cartTable">
     <thead>
       <tr>
-        <th style="width:28%">Product</th>
+        <th style="width:24%">Product</th><th style="width:12%">Remarks</th>
         <th style="width:20%">Size</th>
         <th style="width:8%">Qty</th>
         <th style="width:14%">Selling Price</th>
@@ -109,6 +109,7 @@ function addRow() {
       <option value="">— Select Product —</option>
       ${PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}
     </select></td>
+    <td><input type="text" id="remarks_${rowCount}" placeholder="e.g. Bhagwa" style="background:#1a2d3d;border:1px solid #2a3d4d;color:#e2e8f0;padding:6px 10px;border-radius:6px;width:100%;font-size:13px;"></td>
     <td><select id="size_${rowCount}" onchange="updateHint(${rowCount})">
       <option value="">— Select Product First —</option>
     </select></td>
@@ -190,11 +191,12 @@ function saveCart() {
     const productId = document.getElementById('product_' + id)?.value;
     const size = document.getElementById('size_' + id)?.value;
     const pricingId = document.getElementById('pricingId_' + id)?.value;
+    const remarks = document.getElementById('remarks_' + id)?.value || '';
     const qty = document.getElementById('qty_' + id)?.value;
     const price = document.getElementById('price_' + id)?.value;
     const discount = document.getElementById('discount_' + id)?.value || 0;
     if (!productId || !size || !qty || !price) { showError('Please fill all fields for each row.'); return; }
-    items.push({ product_id: productId, size, pricing_id: pricingId || null, quantity: qty, selling_price: price, discount });
+    items.push({ product_id: productId, size, pricing_id: pricingId || null, quantity: qty, selling_price: price, discount, remarks });
   }
   if (!items.length) { showError('Please add at least one product.'); return; }
   const paymentMode = document.getElementById('paymentMode').value;

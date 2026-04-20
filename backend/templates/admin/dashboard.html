@@ -19,9 +19,10 @@
   --t1:#e8edf5; --t2:#8ba3be; --t3:#3d5a73;
 }
 [data-theme="light"] {
-  --bg-void:#0a0e1a; --bg-surface:#0d1424; --bg-card:#111827; --bg-raised:#1a2235; --bg-card2:#131c2e;
-  --border:#1e2d45; --border-hi:#2a4a6b;
-  --green:#00ff88; --gold:#fbbf24; --t1:#e8edf5; --t2:#8ba3be; --t3:#3d5a73;
+  --bg-void:#f0f4f8; --bg-surface:#fff; --bg-card:#fff; --bg-raised:#f1f5f9; --bg-card2:#f8fafc;
+  --border:#e2e8f0; --border-hi:#94a3b8;
+  --cyan:#0099cc; --green:#00a86b; --orange:#ff6b35; --red:#ff3b5c; --purple:#7c3aed; --gold:#d97706;
+  --t1:#0f172a; --t2:#334155; --t3:#94a3b8;
 }
 .theme-toggle{display:none!important}
 #content{padding:0!important;background:var(--bg-void)!important}
@@ -205,8 +206,10 @@ body{background:var(--bg-void)!important}
 
 <script>
 (function(){
-  var t=localStorage.getItem('eod_theme')||'light';
-  if(t==='dark') document.documentElement.setAttribute('data-theme','dark');
+  var t=localStorage.getItem('eod_theme')||'dark';
+  localStorage.setItem('eod_theme', t);
+  document.documentElement.setAttribute('data-theme', t);
+  document.documentElement.style.colorScheme = t;
 })();
 
 // ── Live IST Clock ────────────────────────────────────────────
@@ -253,11 +256,11 @@ setInterval(updateClock, 1000);
       <span class="tbadge tbadge-live">● LIVE</span>
       <span class="live-clock" id="liveClock">🕐 --:-- --</span>
       {% if alert_count %}<span class="tbadge tbadge-alert" id="alertBadge">⚠ {{ alert_count }} ALERT{{ alert_count|pluralize }}</span>{% endif %}
-      <button class="theme-btn" id="themeBtn" onclick="
-        var h=document.documentElement,c=localStorage.getItem('eod_theme')||'light';
-        if(c==='light'){h.setAttribute('data-theme','dark');this.textContent='🌙 Dark';localStorage.setItem('eod_theme','dark');}
-        else{h.removeAttribute('data-theme');this.textContent='☀️ Light';localStorage.setItem('eod_theme','light');}
-      ">☀️ Light</button>
+            <button class="theme-btn" id="themeBtn" onclick="
+        var h=document.documentElement,c=localStorage.getItem('eod_theme')||'dark';
+        if(c==='dark'){h.setAttribute('data-theme','light');this.textContent='Light';localStorage.setItem('eod_theme','light');}
+        else{h.setAttribute('data-theme','dark');this.textContent='Dark';localStorage.setItem('eod_theme','dark');}
+      ">Dark</button>
       <a href="/admin/export-excel/?range={{ active_range }}" class="exp-btn">📤 Export Excel</a>
     </div>
   </div>
@@ -468,7 +471,7 @@ setInterval(updateClock, 1000);
             {% for p in top_products %}
             <tr>
               <td style="font-family:'JetBrains Mono',monospace;color:var(--t3);font-weight:700">{{ forloop.counter }}</td>
-              <td class="td-name">{{ p.product__name }}</td>
+              <td class="td-name">{{ p.product__name }}{% if p.remarks %} <span style="color:var(--t3);font-weight:400;font-size:11px">– {{ p.remarks }}</span>{% endif %}</td>
               <td style="color:var(--t3);font-size:11px">{{ p.product__category__section__name }} › {{ p.product__category__name }}</td>
               <td style="font-family:'JetBrains Mono',monospace;color:var(--cyan)">{{ p.units }}</td>
               <td style="color:var(--green);font-weight:600">₹{{ p.revenue|floatformat:0 }}</td>
@@ -555,7 +558,7 @@ setInterval(updateClock, 1000);
 <script>
 // ── Theme ─────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', function () {
-  var t = localStorage.getItem('eod_theme') || 'light';
+  var t = localStorage.getItem('eod_theme') || 'dark';
   var btn = document.getElementById('themeBtn');
   if (btn) btn.textContent = t === 'dark' ? '🌙 Dark' : '☀️ Light';
 });
